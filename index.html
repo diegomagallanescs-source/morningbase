@@ -1,0 +1,2111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MorningBase — Your Focus Feed</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Playfair+Display:wght@700;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-primary: #0f1114;
+  --bg-secondary: #181a1f;
+  --bg-card: #1c1e24;
+  --bg-card-hover: #22252c;
+  --bg-elevated: #262930;
+  --text-primary: #e8e6e3;
+  --text-secondary: #9a9690;
+  --text-muted: #5e5a56;
+  --accent: #e07a3a;
+  --accent-hover: #e8924f;
+  --accent-dim: rgba(224,122,58,0.12);
+  --green: #4caf7d;
+  --blue: #5b9bd5;
+  --purple: #9b7ed8;
+  --red: #d45a5a;
+  --border: #2a2d33;
+  --border-light: #33363d;
+  --vote-up: #e07a3a;
+  --vote-down: #5b9bd5;
+  --radius: 10px;
+  --shadow: 0 2px 12px rgba(0,0,0,0.3);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'IBM Plex Sans', sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: var(--bg-primary); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+/* ===== HEADER ===== */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(15,17,20,0.92);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 24px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.logo-icon {
+  width: 32px;
+  height: 32px;
+  background: var(--accent);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--bg-primary);
+}
+
+.logo-text {
+  font-family: 'Playfair Display', serif;
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--text-primary);
+  letter-spacing: -0.5px;
+}
+
+.logo-text span { color: var(--accent); }
+
+.header-center {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.nav-pill {
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+  background: none;
+}
+
+.nav-pill:hover, .nav-pill.active {
+  background: var(--accent-dim);
+  color: var(--accent);
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.focus-reminder {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-family: 'IBM Plex Mono', monospace;
+  max-width: 200px;
+  text-align: right;
+  line-height: 1.3;
+}
+
+.user-profile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  padding: 4px 12px 4px 4px;
+  border-radius: 20px;
+  transition: background 0.2s;
+}
+
+.user-profile:hover { background: var(--bg-elevated); }
+
+.avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--green);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.avatar svg { width: 28px; height: 28px; }
+
+.username {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.user-karma {
+  font-size: 11px;
+  color: var(--accent);
+  font-weight: 500;
+}
+
+/* ===== LAYOUT ===== */
+.layout {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px 24px;
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 24px;
+}
+
+@media (max-width: 900px) {
+  .layout { grid-template-columns: 1fr; }
+  .sidebar { display: none; }
+}
+
+/* ===== BANNER ===== */
+.morning-banner {
+  grid-column: 1/-1;
+  background: linear-gradient(135deg, var(--bg-card) 0%, rgba(224,122,58,0.08) 100%);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+  animation: fadeSlideIn 0.6s ease;
+}
+
+.banner-left h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 22px;
+  font-weight: 800;
+  margin-bottom: 4px;
+}
+
+.banner-left p {
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.banner-left p strong { color: var(--accent); }
+
+.banner-verse {
+  text-align: right;
+  max-width: 380px;
+}
+
+.banner-verse blockquote {
+  font-style: italic;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.5;
+  border-right: 2px solid var(--accent);
+  padding-right: 16px;
+}
+
+.banner-verse cite {
+  display: block;
+  margin-top: 6px;
+  font-size: 11px;
+  color: var(--text-muted);
+  font-style: normal;
+  font-weight: 600;
+}
+
+@keyframes fadeSlideIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ===== FEED ===== */
+.feed { display: flex; flex-direction: column; gap: 12px; }
+
+/* ===== POST CARD ===== */
+.post-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  display: flex;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.2s;
+  animation: fadeIn 0.5s ease;
+}
+
+.post-card:hover {
+  border-color: var(--border-light);
+  background: var(--bg-card-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow);
+}
+
+.vote-strip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 8px;
+  gap: 4px;
+  min-width: 48px;
+  background: rgba(0,0,0,0.15);
+}
+
+.vote-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 16px;
+  padding: 2px;
+  transition: color 0.2s;
+  line-height: 1;
+}
+
+.vote-btn:hover { color: var(--vote-up); }
+.vote-btn.down:hover { color: var(--vote-down); }
+
+.vote-count {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.post-body {
+  flex: 1;
+  padding: 14px 16px;
+  min-width: 0;
+}
+
+.post-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+  flex-wrap: wrap;
+}
+
+.post-sub {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.post-author {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.post-tag {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.tag-tech { background: rgba(91,155,213,0.15); color: var(--blue); }
+.tag-career { background: rgba(76,175,125,0.15); color: var(--green); }
+.tag-history { background: rgba(155,126,216,0.15); color: var(--purple); }
+.tag-mindset { background: rgba(224,122,58,0.15); color: var(--accent); }
+.tag-sports { background: rgba(212,90,90,0.15); color: var(--red); }
+.tag-faith { background: rgba(200,180,120,0.15); color: #c8b478; }
+
+.post-title {
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.35;
+  margin-bottom: 6px;
+  color: var(--text-primary);
+}
+
+.post-preview {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.post-thumbnail {
+  width: 140px;
+  min-height: 100px;
+  background-size: cover;
+  background-position: center;
+  border-radius: 6px;
+  margin: 14px 14px 14px 0;
+  flex-shrink: 0;
+  background: var(--bg-elevated);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.thumb-placeholder {
+  font-size: 9px;
+  color: var(--text-muted);
+  font-family: 'IBM Plex Mono', monospace;
+  text-align: center;
+  padding: 8px;
+  word-break: break-all;
+  line-height: 1.4;
+  opacity: 0.7;
+}
+
+.post-footer {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 10px;
+}
+
+.post-action {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 500;
+  transition: color 0.2s;
+  cursor: pointer;
+}
+
+.post-action:hover { color: var(--text-secondary); }
+
+.post-time {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-left: auto;
+}
+
+/* ===== PINNED CARD ===== */
+.pinned-card {
+  background: linear-gradient(135deg, rgba(224,122,58,0.06), rgba(224,122,58,0.02));
+  border: 1px solid rgba(224,122,58,0.25);
+}
+
+.pinned-card .post-title::before {
+  content: '📌 ';
+  font-size: 14px;
+}
+
+/* ===== QUOTE CARD ===== */
+.quote-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px 28px;
+  border-left: 3px solid var(--accent);
+  animation: fadeIn 0.5s ease;
+}
+
+.quote-card blockquote {
+  font-family: 'Playfair Display', serif;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.45;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+.quote-card cite {
+  font-style: normal;
+  font-size: 13px;
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.post-footer {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 10px;
+  font-size: 12px;
+}
+
+/* mini votes */
+.post-votes {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-muted);
+}
+
+.vote-mini {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 11px;
+  padding: 2px 4px;
+  border-radius: 4px;
+}
+
+.vote-mini:hover { color: var(--accent); }
+.vote-mini.down:hover { color: var(--vote-down); }
+
+.vote-mini-count {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.quote-card .quote-votes {
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* ===== SIDEBAR ===== */
+.sidebar { display: flex; flex-direction: column; gap: 16px; }
+
+.sidebar-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px;
+}
+
+.sidebar-card h3 {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--text-muted);
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.focus-card {
+  border: 1px solid rgba(224,122,58,0.3);
+  background: linear-gradient(135deg, rgba(224,122,58,0.06), var(--bg-card));
+}
+
+.focus-card .focus-text {
+  font-size: 14px;
+  color: var(--text-primary);
+  font-weight: 600;
+  line-height: 1.5;
+  margin-bottom: 12px;
+}
+
+.focus-card .focus-sub {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.topic-list { list-style: none; }
+
+.topic-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+
+.topic-item:last-child { border-bottom: none; }
+
+.topic-name { color: var(--text-primary); font-weight: 500; }
+.topic-count { color: var(--text-muted); font-size: 11px; }
+
+.reading-item {
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.reading-item:last-child { border-bottom: none; }
+
+.reading-item a {
+  color: var(--blue);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.reading-item a:hover { color: var(--accent); }
+
+.reading-item p {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.streak-display {
+  text-align: center;
+  padding: 8px 0;
+}
+
+.streak-number {
+  font-family: 'Playfair Display', serif;
+  font-size: 48px;
+  font-weight: 900;
+  color: var(--accent);
+  line-height: 1;
+}
+
+.streak-label {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.streak-days {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  margin-top: 12px;
+}
+
+.streak-dot {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.streak-dot.done { background: var(--accent-dim); color: var(--accent); }
+.streak-dot.today { background: var(--accent); color: var(--bg-primary); }
+.streak-dot.future { background: var(--bg-elevated); color: var(--text-muted); }
+
+/* ===== POST DETAIL VIEW ===== */
+.post-detail-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.7);
+  z-index: 200;
+  overflow-y: auto;
+  padding: 40px 24px;
+  animation: fadeIn 0.3s ease;
+}
+
+.post-detail-overlay.active { display: block; }
+
+.post-detail {
+  max-width: 760px;
+  margin: 0 auto;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.detail-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.back-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 6px 12px;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.back-btn:hover { background: var(--bg-elevated); color: var(--text-primary); }
+
+.detail-votes {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.detail-body {
+  padding: 28px 32px;
+}
+
+.detail-body .post-meta { margin-bottom: 12px; }
+
+.detail-body .post-title {
+  font-size: 24px;
+  margin-bottom: 16px;
+  line-height: 1.3;
+}
+
+.detail-content {
+  font-size: 15px;
+  line-height: 1.75;
+  color: var(--text-secondary);
+}
+
+.detail-content p { margin-bottom: 16px; }
+.detail-content strong { color: var(--text-primary); }
+.detail-content h3 {
+  color: var(--text-primary);
+  font-size: 17px;
+  margin: 24px 0 10px;
+}
+
+.detail-content ul {
+  padding-left: 20px;
+  margin-bottom: 16px;
+}
+
+.detail-content li { margin-bottom: 6px; }
+
+.detail-content .highlight-box {
+  background: var(--accent-dim);
+  border-left: 3px solid var(--accent);
+  padding: 16px 20px;
+  border-radius: 0 8px 8px 0;
+  margin: 20px 0;
+  font-style: italic;
+}
+
+.detail-image {
+  width: 100%;
+  height: 280px;
+  background-size: cover;
+  background-position: center;
+  border-radius: 8px;
+  margin: 20px 0;
+  background: var(--bg-elevated);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 1px dashed var(--border-light);
+}
+
+.detail-img-placeholder {
+  font-size: 14px;
+  color: var(--text-muted);
+  font-family: 'IBM Plex Mono', monospace;
+  text-align: center;
+  padding: 20px;
+  opacity: 0.6;
+}
+
+.detail-post-image {
+  width: 100%;
+  max-height: 700px;
+  object-fit: contain;
+  border-radius: 10px;
+  margin: 16px 0;
+  background: var(--bg-elevated);
+}
+
+/* Comments */
+.comments-section {
+  padding: 24px 32px;
+  border-top: 1px solid var(--border);
+}
+
+.comments-header {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.comment {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.comment:last-child { border-bottom: none; }
+
+.comment-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--bg-primary);
+}
+
+.comment-body { flex: 1; }
+
+.comment-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.comment-user {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.comment-time {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.comment-text {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.55;
+}
+
+.comment-actions {
+  display: flex;
+  gap: 14px;
+  margin-top: 6px;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.comment-actions span {
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.comment-actions span:hover { color: var(--text-secondary); }
+
+.comment-reply {
+  margin-left: 42px;
+  padding-left: 16px;
+  border-left: 2px solid var(--border);
+}
+
+.post-card {
+  flex-direction: column; /* IMPORTANT */
+}
+
+.post-body {
+  padding: 14px 16px 16px 16px;
+}
+
+.post-image {
+  width: 100%;
+  max-height: 520px;   /* reddit style limit */
+  object-fit: contain; /* VERY IMPORTANT → prevents cropping */
+  border-radius: 8px;
+  margin: 10px 0;
+  background: var(--bg-elevated);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Category filter active states */
+.feed-post { display: block; }
+.feed-post.hidden { display: none; }
+
+/* Responsive */
+@media (max-width: 600px) {
+  .header { padding: 0 12px; }
+  .layout { padding: 12px; }
+  .post-thumbnail { display: none; }
+  .banner-verse { display: none; }
+  .morning-banner { padding: 16px 20px; }
+  .detail-body { padding: 20px; }
+  .comments-section { padding: 20px; }
+  .header-center { display: none; }
+  .focus-reminder { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="logo" onclick="goHome()">
+    <div class="logo-icon">M</div>
+    <div class="logo-text">Morning<span>Base</span></div>
+  </div>
+
+  <div class="header-center">
+    <button class="nav-pill active" onclick="filterPosts('all', this)">All</button>
+    <button class="nav-pill" onclick="filterPosts('tech', this)">Tech</button>
+    <button class="nav-pill" onclick="filterPosts('career', this)">Career</button>
+    <button class="nav-pill" onclick="filterPosts('mindset', this)">Mindset</button>
+    <button class="nav-pill" onclick="filterPosts('history', this)">History</button>
+    <button class="nav-pill" onclick="filterPosts('sports', this)">Sports</button>
+  </div>
+
+  <div class="header-right">
+    <div class="focus-reminder">protect your focus.<br>it's what makes you.</div>
+    <div class="user-profile">
+      <div class="avatar">
+        <svg viewBox="0 0 100 100" fill="none">
+          <circle cx="50" cy="50" r="50" fill="#3a7d5c"/>
+          <ellipse cx="50" cy="68" rx="28" ry="26" fill="#4caf7d"/>
+          <ellipse cx="50" cy="38" rx="20" ry="18" fill="#4caf7d"/>
+          <circle cx="42" cy="34" r="4" fill="#0f1114"/>
+          <circle cx="58" cy="34" r="4" fill="#0f1114"/>
+          <circle cx="43" cy="33" r="1.5" fill="white"/>
+          <circle cx="59" cy="33" r="1.5" fill="white"/>
+          <path d="M44 42 Q50 47 56 42" stroke="#0f1114" stroke-width="2" fill="none" stroke-linecap="round"/>
+          <path d="M28 34 L22 22 L34 30Z" fill="#4caf7d"/>
+          <path d="M72 34 L78 22 L66 30Z" fill="#4caf7d"/>
+          <ellipse cx="35" cy="56" rx="4" ry="3" fill="#3a7d5c"/>
+          <ellipse cx="65" cy="56" rx="4" ry="3" fill="#3a7d5c"/>
+          <rect x="62" y="72" width="22" height="6" rx="3" fill="#3a7d5c"/>
+          <path d="M22 65 L14 58 M22 70 L12 66" stroke="#4caf7d" stroke-width="3" stroke-linecap="round"/>
+          <path d="M78 65 L86 58 M78 70 L88 66" stroke="#4caf7d" stroke-width="3" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div>
+        <div class="username">diego_dev</div>
+        <div class="user-karma">⚡ 2,847 focus pts</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- POST DETAIL OVERLAY -->
+<div class="post-detail-overlay" id="postDetail">
+  <div class="post-detail">
+    <div class="detail-header">
+      <button class="back-btn" onclick="closeDetail()">← Back to feed</button>
+      <div class="detail-votes">
+        <button class="vote-btn" onclick="event.stopPropagation()">▲</button>
+        <span class="vote-count" id="detailVotes">--</span>
+        <button class="vote-btn down" onclick="event.stopPropagation()">▼</button>
+      </div>
+    </div>
+    <div class="detail-body" id="detailBody"></div>
+    <div class="comments-section" id="detailComments"></div>
+  </div>
+</div>
+
+<!-- MAIN LAYOUT -->
+<div class="layout">
+
+  <!-- MORNING BANNER -->
+  <div class="morning-banner">
+    <div class="banner-left">
+      <h2>Good Morning, Diego 🌅</h2>
+      <p>Tuesday • <strong>Feed curated for focus.</strong> Read, learn, then build.</p>
+    </div>
+    <div class="banner-verse">
+      <blockquote>"For though the righteous fall seven times, they rise again, but the wicked stumble when calamity strikes."</blockquote>
+      <cite>— PROVERBS 24:16</cite>
+    </div>
+  </div>
+
+  <!-- FEED -->
+  <main class="feed" id="feed"></main>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+
+    <!-- FOCUS CARD -->
+    <div class="sidebar-card focus-card">
+      <h3>🔥 Morning Protocol</h3>
+      <div class="focus-text">Leave the random scrolling, checking YouTube, shopping, and other distracting things for later in the day.</div>
+      <div class="focus-sub">Protect your focus with EVERYTHING — it is what makes you. Read here, learn something real, then go build.</div>
+    </div>
+
+    <!-- STREAK -->
+    <div class="sidebar-card">
+      <h3>📊 Focus Streak</h3>
+      <div class="streak-display">
+        <div class="streak-number">7</div>
+        <div class="streak-label">day streak — keep it going</div>
+        <div class="streak-days">
+          <div class="streak-dot done">M</div>
+          <div class="streak-dot done">T</div>
+          <div class="streak-dot done">W</div>
+          <div class="streak-dot done">T</div>
+          <div class="streak-dot done">F</div>
+          <div class="streak-dot done">S</div>
+          <div class="streak-dot today">S</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TRENDING TOPICS -->
+    <div class="sidebar-card">
+      <h3>📈 Trending Topics</h3>
+      <ul class="topic-list">
+        <li class="topic-item"><span class="topic-name">ASP.NET Core 9</span><span class="topic-count">342 posts</span></li>
+        <li class="topic-item"><span class="topic-name">C# Pattern Matching</span><span class="topic-count">218 posts</span></li>
+        <li class="topic-item"><span class="topic-name">Dependency Injection</span><span class="topic-count">196 posts</span></li>
+        <li class="topic-item"><span class="topic-name">REST API Design</span><span class="topic-count">184 posts</span></li>
+        <li class="topic-item"><span class="topic-name">Azure DevOps</span><span class="topic-count">167 posts</span></li>
+        <li class="topic-item"><span class="topic-name">Stoicism</span><span class="topic-count">153 posts</span></li>
+        <li class="topic-item"><span class="topic-name">Agile PM</span><span class="topic-count">141 posts</span></li>
+      </ul>
+    </div>
+
+    <!-- READING LIST -->
+    <div class="sidebar-card">
+      <h3>📖 Reading Queue</h3>
+      <div class="reading-item">
+        <a href="#">Deloitte Engineering Journal — Q1 2026</a>
+        <p>Latest insights on enterprise architecture</p>
+      </div>
+      <div class="reading-item">
+        <a href="#">Microsoft Docs: Intune Compliance APIs</a>
+        <p>Deep dive on device management endpoints</p>
+      </div>
+      <div class="reading-item">
+        <a href="#">Meditations — Marcus Aurelius</a>
+        <p>Stoic philosophy for the modern builder</p>
+      </div>
+      <div class="reading-item">
+        <a href="#">Clean Architecture — Robert C. Martin</a>
+        <p>Dependency rule & enterprise patterns</p>
+      </div>
+    </div>
+
+    <!-- DAILY QUOTES -->
+    <div class="sidebar-card">
+      <h3>💬 Daily Principles</h3>
+      <div style="font-size:13px; color:var(--text-secondary); line-height:1.6;">
+        <p style="margin-bottom:12px;">"<strong style="color:var(--text-primary)">Focus</strong> — saying no to distractions disguised as fun — is the single most important trait of winners along with consistency."</p>
+        <p style="margin-bottom:12px;">"Walk towards the pain. Everyone else runs."</p>
+        <p style="margin-bottom:12px;">"The ordinary man seeks comfort. The great man sacrifices it."</p>
+        <p style="margin-bottom:12px;">"A leader is not born — he is made in the moments where others hesitate."</p>
+        <p style="font-size:11px; color:var(--text-muted); margin-top:16px; padding-top:12px; border-top:1px solid var(--border);">"A Man becomes soft when his days know no struggle. He forgets that the body is a weapon and every weapon dulls without use."</p>
+      </div>
+    </div>
+
+  </aside>
+</div>
+
+<script>
+// ===== POST DATA =====
+const posts = [
+  // PINNED
+  {
+    id: 'pinned-focus',
+    image: 'images/focus-mindset.png',
+    pinned: true,
+    category: 'mindset',
+    sub: 'm/MorningProtocol',
+    author: 'system',
+    tag: 'mindset',
+    tagLabel: 'MINDSET',
+    time: 'pinned',
+    votes: 9999,
+    commentCount: 0,
+    title: '🎯 What Makes a Man Great?',
+    preview: 'Focus — saying no to distractions disguised as fun — is the single most important trait of winners along with consistency. Protect your morning hours. This feed exists so you spend your first waking minutes building your mind, not numbing it.',
+    content: `
+      <p><strong>What makes a man great?</strong></p>
+      <p>It isn't talent. Talented people fail every single day. It isn't luck — luck is what happens when preparation meets opportunity. It isn't connections, money, or circumstance.</p>
+      <p>It's <strong>focus</strong>. It's saying no to the things disguised as fun. It's consistency when nobody is watching. It's waking up and choosing the hard path when the easy one is right there.</p>
+      <div class="highlight-box">"Focus — saying no to distractions disguised as fun — is the single most important trait of winners along with consistency."</div>
+      <p>"Walk towards the pain, everyone else runs."</p>
+      <p>"The ordinary man seeks comfort, the great man sacrifices it."</p>
+      <p>"A leader is not born, he is made in the moments where others hesitate."</p>
+      <h3>A Warning About Comfort</h3>
+      <p>"A Man becomes soft when his days know no struggle, and his hands know no callous. He forgets that the body is a weapon and every weapon dulls without use. He begins to fear the discomfort that once made him dangerous. When the day of reckoning comes, he will pray for the strength he squandered."</p>
+      <h3>Your Morning Protocol</h3>
+      <p>Leave the random scrolling, checking YouTube, shopping, and other distracting things for <strong>later in the day</strong>. Protect your focus with EVERYTHING — it is what makes you.</p>
+      <p>Read here. Learn something real. Then go build.</p>
+      <div class="highlight-box">"For though the righteous fall seven times, they rise again, but the wicked stumble when calamity strikes." — Proverbs 24:16</div>
+    `,
+    comments: [
+      { user: 'stoic_dev', avatar: '#9b7ed8', time: '2h ago', text: 'Pinned this to my monitor. The comfort quote hits different when you\'re debating whether to skip the gym.', upvotes: 234 },
+      { user: 'ironmind99', avatar: '#e07a3a', time: '1h ago', text: 'Needed this. Was about to open Instagram. Back to the books.', upvotes: 187 },
+    ]
+  },
+
+  // TECH POSTS
+  {
+    id: 'aspnet-di',
+    image: 'images/aspnet.png',
+    category: 'tech',
+    sub: 'm/dotnet',
+    author: 'u/csharp_architect',
+    tag: 'tech',
+    tagLabel: 'TECH',
+    time: '3h ago',
+    votes: 1842,
+    commentCount: 247,
+    title: 'Understanding Dependency Injection in ASP.NET Core — The Pattern That Changed How Enterprise Software Is Built',
+    preview: 'If you\'re building anything in ASP.NET Core, DI isn\'t optional — it\'s the backbone. Here\'s a deep dive into how the built-in IoC container works, why constructor injection beats service locator, and how Microsoft\'s own teams use it in products like Intune...',
+    content: `
+      <p>Dependency Injection is one of those concepts that seems abstract until it clicks — and then you can't imagine writing enterprise code without it. If you're working in ASP.NET Core, understanding DI deeply is non-negotiable.</p>
+      <h3>Why DI Matters</h3>
+      <p>At its core, DI is about <strong>inverting control</strong>. Instead of a class creating its own dependencies, they're injected from outside. This sounds simple but has massive implications for testability, maintainability, and modularity.</p>
+      <p>In ASP.NET Core, the built-in IoC (Inversion of Control) container manages three service lifetimes:</p>
+      <ul>
+        <li><strong>Transient:</strong> Created every time they're requested. Perfect for lightweight, stateless services.</li>
+        <li><strong>Scoped:</strong> Created once per HTTP request. This is your go-to for database contexts (like EF Core's DbContext).</li>
+        <li><strong>Singleton:</strong> Created once and shared for the entire application lifetime. Use for caching services, configuration, etc.</li>
+      </ul>
+      <h3>Constructor Injection vs. Service Locator</h3>
+      <p>Always prefer constructor injection. Service locator is an anti-pattern because it hides dependencies and makes your code harder to reason about.</p>
+      <div class="highlight-box">In enterprise products like Microsoft Intune, constructor injection is used throughout the compliance service layer. Each compliance evaluator receives its dependencies through the constructor, making the entire chain testable and swappable.</div>
+      <h3>Real-World Pattern: The Options Pattern</h3>
+      <p>One of the most powerful DI-adjacent patterns in ASP.NET Core is <strong>IOptions&lt;T&gt;</strong>. Instead of injecting raw configuration values, you bind entire configuration sections to strongly-typed objects. This is how teams at Microsoft configure feature flags, tenant-specific settings, and service endpoints across distributed systems.</p>
+      <p>The key insight: DI isn't just a pattern — it's a <strong>philosophy</strong>. It forces you to think about boundaries, responsibilities, and contracts between components. Master it and you master the architecture.</p>
+    `,
+    comments: [
+      { user: 'dotnet_daily', avatar: '#5b9bd5', time: '2h ago', text: 'The IOptions pattern is criminally underrated. Once you start using IOptionsSnapshot for hot-reloading config, there\'s no going back.', upvotes: 156 },
+      { user: 'junior_dev_journey', avatar: '#4caf7d', time: '1h ago', text: 'I just started learning ASP.NET Core coming from Node. This actually made DI click for me. The service lifetimes explanation was perfect.', upvotes: 89 },
+      { user: 'cloud_engineer_k', avatar: '#9b7ed8', time: '45min ago', text: 'Used exactly this pattern at my last company. We had 40+ services all wired through constructor injection. Testing was a breeze compared to the legacy codebase.', upvotes: 67 },
+      { user: 'enterprise_dev', avatar: '#e07a3a', time: '30min ago', text: 'Quick tip: watch out for captive dependencies — injecting a transient into a singleton will cause memory leaks. The DI container won\'t warn you about this.', upvotes: 203 },
+    ]
+  },
+
+  {
+    id: 'http-deep',
+    image: 'images/http.png',
+    category: 'tech',
+    sub: 'm/webdev',
+    author: 'u/protocol_nerd',
+    tag: 'tech',
+    tagLabel: 'TECH',
+    time: '5h ago',
+    votes: 2103,
+    commentCount: 189,
+    title: 'HTTP Deep Dive: What Actually Happens Between Your Browser and a REST API (And Why Every Developer Should Know)',
+    preview: 'Most developers use HTTP every day but don\'t actually understand the protocol. Let\'s trace an entire API request from DNS resolution to TCP handshake to TLS negotiation to the actual HTTP/2 frames...',
+    content: `
+      <p>You hit an API endpoint a hundred times a day. But do you actually know what happens in those milliseconds between your request and the response? Let's trace the entire journey.</p>
+      <h3>Step 1: DNS Resolution</h3>
+      <p>Your browser (or HttpClient in C#) first needs to resolve the domain name to an IP address. It checks the local cache, then the OS cache, then your router, then your ISP's DNS resolver, and finally the authoritative nameserver. This is why DNS caching matters so much in enterprise applications.</p>
+      <h3>Step 2: TCP Three-Way Handshake</h3>
+      <p>Once you have the IP, a TCP connection is established: SYN → SYN-ACK → ACK. This takes a full round trip. In HTTP/1.1, this happens for every new connection. HTTP/2 multiplexes multiple requests over a single connection — a massive performance win.</p>
+      <h3>Step 3: TLS Negotiation</h3>
+      <p>For HTTPS (which should be everything), there's an additional handshake to establish encryption. TLS 1.3 reduces this to a single round trip. The client and server agree on cipher suites, exchange certificates, and derive session keys.</p>
+      <h3>Step 4: The HTTP Request</h3>
+      <p>Now your actual request travels: the method (GET, POST, PUT, DELETE), headers (Authorization, Content-Type, Accept), and body. In REST APIs, the <strong>status codes</strong> in the response are your contract: 200 OK, 201 Created, 400 Bad Request, 401 Unauthorized, 404 Not Found, 500 Internal Server Error.</p>
+      <div class="highlight-box">Understanding HTTP deeply is what separates developers who build APIs from developers who architect them. When you're debugging a 503 in production at 2 AM, knowing the protocol saves you hours.</div>
+      <h3>Why This Matters for Your Career</h3>
+      <p>At companies like Microsoft, debugging distributed systems often comes down to understanding what's happening at the HTTP level. Service-to-service auth, tenant routing, retry policies — it all lives on top of HTTP.</p>
+    `,
+    comments: [
+      { user: 'backend_boss', avatar: '#d45a5a', time: '4h ago', text: 'I interview candidates on HTTP knowledge. You\'d be surprised how many senior devs can\'t explain the difference between 401 and 403.', upvotes: 341 },
+      { user: 'net_ninja', avatar: '#5b9bd5', time: '3h ago', text: 'HTTP/3 with QUIC is even crazier — it runs over UDP instead of TCP. Google\'s already using it for most of their services.', upvotes: 127 },
+      { user: 'fullstack_maria', avatar: '#4caf7d', time: '2h ago', text: 'Saved this. The TLS 1.3 section alone is worth the read. I\'ve been trying to explain this to my team for weeks.', upvotes: 88 },
+    ]
+  },
+
+  // QUOTE CARD
+  {
+    id: 'quote-jesus',
+    type: 'quote',
+    category: 'faith',
+    quote: '"I am the way, the truth, and the life."',
+    source: '— Jesus Christ, John 14:6',
+    votes: 4521,
+  },
+
+  {
+    id: 'csharp-patterns',
+    image: 'images/patternmatching.png',
+    category: 'tech',
+    sub: 'm/csharp',
+    author: 'u/pattern_master',
+    tag: 'tech',
+    tagLabel: 'TECH',
+    time: '6h ago',
+    votes: 1567,
+    commentCount: 156,
+    title: 'C# Pattern Matching in 2026: Switch Expressions, Guard Clauses, and Writing Code That Reads Like English',
+    preview: 'C# has evolved dramatically. Modern pattern matching with switch expressions, property patterns, and relational patterns lets you write incredibly expressive code. Here\'s how to use these features to write cleaner enterprise code...',
+    content: `
+      <p>C# isn't the same language it was 10 years ago. Modern C# with pattern matching is expressive, concise, and powerful. Let's explore the features that are transforming how enterprise code is written.</p>
+      <h3>Switch Expressions</h3>
+      <p>Gone are the days of verbose switch statements. Switch expressions return values directly and support pattern matching:</p>
+      <p><code>var message = statusCode switch { 200 => "OK", 404 => "Not Found", 500 => "Server Error", _ => "Unknown" };</code></p>
+      <h3>Property Patterns</h3>
+      <p>You can match against properties of objects directly. This is incredibly useful for compliance checks, validation, and business rules:</p>
+      <p><code>if (device is { ComplianceState: ComplianceState.NonCompliant, LastCheckIn: var d } && d < threshold)</code></p>
+      <div class="highlight-box">At Microsoft, pattern matching is used extensively in Intune's compliance evaluation pipeline. Each compliance rule evaluator uses pattern matching to determine device state — it turns complex business logic into readable, maintainable code.</div>
+      <h3>The Bigger Picture</h3>
+      <p>Pattern matching isn't just syntax sugar — it's a way of thinking. It encourages you to model your domain with discriminated types and let the compiler help you handle every case. Combined with nullable reference types and records, modern C# is a genuinely different experience.</p>
+    `,
+    comments: [
+      { user: 'refactor_king', avatar: '#e07a3a', time: '5h ago', text: 'Switched (pun intended) our entire validation layer to pattern matching. Code review times dropped 40% because the code actually reads like business requirements now.', upvotes: 198 },
+      { user: 'functional_fan', avatar: '#9b7ed8', time: '3h ago', text: 'C# is slowly becoming F# and I\'m here for it. Discriminated unions when??', upvotes: 145 },
+      { user: 'intern_to_sde', avatar: '#5b9bd5', time: '2h ago', text: 'Just used property patterns in my compliance recalculation feature. Game changer for readability.', upvotes: 76 },
+    ]
+  },
+
+  // STEVE JOBS
+  {
+    id: 'steve-jobs',
+    image: 'images/jobs.png',
+    category: 'mindset',
+    sub: 'm/legends',
+    author: 'u/silicon_historian',
+    tag: 'mindset',
+    tagLabel: 'MINDSET',
+    time: '4h ago',
+    votes: 3847,
+    commentCount: 412,
+    title: 'Steve Jobs: The Man Who Said "No" to 1,000 Things — How Relentless Focus Built the World\'s Most Valuable Company',
+    preview: 'Jobs was fired from his own company, started two others, then came back and turned Apple from near-bankruptcy into the most valuable company on earth. The secret wasn\'t genius — it was elimination...',
+    content: `
+      <p>In 1997, Apple was 90 days from bankruptcy. Steve Jobs had just returned to the company that fired him 12 years earlier. What he did next is a masterclass in <strong>focus</strong>.</p>
+      <h3>The Power of Saying No</h3>
+      <p>Jobs walked into a product review meeting where Apple had dozens of products in development. He drew a simple 2×2 grid on the whiteboard: Consumer/Pro on one axis, Desktop/Portable on the other. Four products. Everything else was killed.</p>
+      <p>"People think focus means saying yes to the thing you've got to focus on. But that's not what it means at all. <strong>It means saying no to the hundred other good ideas.</strong> Innovation is saying no to 1,000 things."</p>
+      <div class="highlight-box">"Deciding what not to do is as important as deciding what to do. That's true for companies, and it's true for products."</div>
+      <h3>The Comeback</h3>
+      <p>After being ousted from Apple in 1985, Jobs didn't retreat. He founded NeXT (whose technology became the foundation of macOS) and acquired Pixar (which became the most successful animation studio in history). When he returned to Apple, he brought everything he'd learned about focus, design, and building products people love.</p>
+      <h3>The Stanford Speech</h3>
+      <p>"Your time is limited, so don't waste it living someone else's life. Don't be trapped by dogma — which is living with the results of other people's thinking. Have the courage to follow your heart and intuition."</p>
+      <p>Jobs built the iPhone, the iPad, the Mac, the App Store, iTunes, and Pixar. Not by doing everything — but by doing very few things with <strong>insane</strong> levels of quality and focus.</p>
+      <h3>The Lesson for Engineers</h3>
+      <p>Whether you're building a compliance API or an entire product, the principle is the same: <strong>ruthless prioritization</strong>. Cut the features that don't matter. Polish the ones that do. Say no to the good so you can say yes to the great.</p>
+    `,
+    comments: [
+      { user: 'founder_grind', avatar: '#e07a3a', time: '3h ago', text: 'The 2x2 grid story is the most important business lesson ever told. Most startups die from doing too much, not too little.', upvotes: 567 },
+      { user: 'design_purist', avatar: '#4caf7d', time: '2h ago', text: 'Jobs understood that design isn\'t how it looks — it\'s how it works. That philosophy should be in every engineering onboarding.', upvotes: 234 },
+      { user: 'pm_lead_sarah', avatar: '#5b9bd5', time: '1h ago', text: 'Applied the 2x2 grid to our product roadmap last quarter. We cut 60% of planned features. Shipped on time for the first time in 2 years.', upvotes: 445 },
+      { user: 'quiet_builder', avatar: '#9b7ed8', time: '45min ago', text: '"Say no to the good so you can say yes to the great." That\'s it. That\'s the whole game.', upvotes: 312 },
+    ]
+  },
+
+  {
+    id: 'ms-engineer-story',
+    image: 'images/Professional Headshot.jpeg',
+    category: 'career',
+    sub: 'm/careerGrowth',
+    author: 'u/tech_stories',
+    tag: 'career',
+    tagLabel: 'CAREER',
+    time: '7h ago',
+    votes: 2956,
+    commentCount: 334,
+    title: 'From Intern to Principal Engineer at Microsoft: How One Dev Used Side Projects, Certifications, and Relentless Learning to 10x Their Career',
+    preview: 'He started as an intern on the Azure team, stayed curious, shipped features nobody asked his to build, and within 8 years became one of the youngest Principal Engineers in Microsoft\'s history...',
+    content: `
+      <p>Diego joined Microsoft as an intern in 2016 on the Azure DevOps team. Eight years later, he's a Principal Engineer leading architecture decisions for services used by millions. Here's how he did it.</p>
+      <h3>The Intern Mindset That Stayed</h3>
+      <p>Most interns try to survive. Diego tried to <strong>understand</strong>. He didn't just complete his intern project — he traced the entire request path through the system, from the React frontend through the C# API controllers, down to the distributed storage layer. He asked questions that annoyed senior devs until they respected him for it.</p>
+      <h3>The Side Project That Changed Everything</h3>
+      <p>In his first year as a full-time SDE, Diego noticed the team spent hours manually checking compliance states for test devices. he built an internal tool on his own time — a dashboard that automated compliance recalculation and surfaced detailed device information through a clean API. His manager noticed. His skip-level noticed. He got moved to a high-visibility project.</p>
+      <div class="highlight-box">"The people who advance fastest aren't always the smartest. They're the ones who see problems nobody else bothers to fix, and then fix them."</div>
+      <h3>The Certification Stack</h3>
+      <p>Diego stacked certifications strategically: AZ-204 (Azure Developer), AZ-400 (DevOps Engineer), and eventually AZ-305 (Solutions Architect). Not because certifications alone matter — but because the study process forced him to understand systems he didn't touch daily.</p>
+      <h3>The Investment Angle</h3>
+      <p>With his growing compensation, Diego started investing early. he maxed his 401(k), invested heavily in index funds, and used his understanding of cloud computing to make informed decisions about tech stocks. By 30, his net worth crossed seven figures — not from a lucky bet, but from <strong>consistent, informed investing</strong> paired with career growth.</p>
+      <h3>His Advice</h3>
+      <p>"Be the person who understands the entire system, not just your corner of it. Read the code that scares you. Volunteer for the project nobody wants. The compound interest of curiosity is a career you never imagined."</p>
+    `,
+    comments: [
+      { user: 'azure_grinder', avatar: '#5b9bd5', time: '6h ago', text: 'The side project story hits home. I built an internal monitoring tool and it literally got me promoted. Visibility matters.', upvotes: 234 },
+      { user: 'invest_early', avatar: '#4caf7d', time: '5h ago', text: 'The investing section is real. As engineers we understand compound growth intellectually but few actually apply it to their finances. Start at 22, be a millionaire by 32.', upvotes: 456 },
+      { user: 'career_mentor_j', avatar: '#e07a3a', time: '3h ago', text: '"Read the code that scares you." I tell this to every junior dev I mentor. The uncomfortable code is where growth lives.', upvotes: 189 },
+      { user: 'intern_2025', avatar: '#9b7ed8', time: '1h ago', text: 'Currently interning at Microsoft and this is exactly the energy I needed. Going to go trace our full request pipeline tomorrow.', upvotes: 567 },
+    ]
+  },
+
+  // QUOTE CARD
+  {
+    id: 'quote-stoic',
+    type: 'quote',
+    category: 'mindset',
+    quote: '"You have power over your mind — not outside events. Realize this, and you will find strength."',
+    source: '— Marcus Aurelius, Meditations',
+    votes: 3891,
+  },
+
+  // CRISTIANO RONALDO
+  {
+    id: 'ronaldo',
+    image: 'images/ronaldo.png',
+    category: 'sports',
+    sub: 'm/greatness',
+    author: 'u/elite_mentality',
+    tag: 'sports',
+    tagLabel: 'SPORTS',
+    time: '4h ago',
+    votes: 5234,
+    commentCount: 678,
+    title: 'Cristiano Ronaldo: 5× Ballon d\'Or, 900+ Goals — The Work Ethic That Made Him Arguably the Greatest Soccer Player Ever',
+    preview: 'At 41, he still trains like he\'s 20. Five Champions League titles, five Ballon d\'Ors, and the most goals in professional football history. The secret? An obsession with being better today than yesterday...',
+    content: `
+      <p>There are talented players. There are hardworking players. And then there's <strong>Cristiano Ronaldo</strong> — a player who combined extraordinary talent with a work ethic that borders on obsession, and sustained it for over two decades.</p>
+      <h3>The Numbers</h3>
+      <p>5× Ballon d'Or Winner. 5× UEFA Champions League Winner. Portugal National Team Captain. 900+ career goals. All-time top scorer in Champions League history. All-time top international goalscorer. These aren't just records — they're monuments to consistency.</p>
+      <h3>The Work Ethic</h3>
+      <p>Ronaldo's former teammates have all said the same thing: he's always the first to arrive at training and the last to leave. At Manchester United, Sir Alex Ferguson — a man who managed thousands of players — said Ronaldo was the hardest-working player he'd ever seen.</p>
+      <p>He transformed his body from a skinny winger at Sporting Lisbon into one of the most athletic specimens in sports history. He doesn't drink alcohol. He sleeps in 90-minute cycles optimized for recovery. He has a personal chef, a personal physio, and a cryotherapy chamber at home.</p>
+      <div class="highlight-box">"Talent without hard work is nothing. I am not a perfectionist, but I like to feel that things are done well. I'd rather score a beautiful goal than win a game — that's how dedicated I am to the craft."</div>
+      <h3>The Mentality</h3>
+      <p>In the 2016 European Championship final, Ronaldo was carried off the pitch injured after just 25 minutes. Most captains would have gone to the locker room. Ronaldo stayed on the sideline, coaching his teammates, screaming instructions, and willing Portugal to their first-ever major tournament victory.</p>
+      <p>That's the difference. The body broke down. The mentality didn't.</p>
+      <h3>The Business Mind</h3>
+      <p>Off the pitch, Ronaldo built a billion-dollar brand: CR7 hotels, CR7 fashion, CR7 fragrances. He understood early that athletic careers are finite, but brands can be forever. With an estimated net worth over $1 billion, he's one of the wealthiest athletes in history.</p>
+      <h3>The Lesson</h3>
+      <p>Ronaldo isn't the most naturally gifted player who ever lived. Plenty of people will argue that case belongs to Messi or others. What nobody argues is this: <strong>nobody has ever wanted it more</strong>. That desire — to be better today than yesterday, every single day for 20+ years — is what separates good from legendary.</p>
+    `,
+    comments: [
+      { user: 'grind_mentality', avatar: '#e07a3a', time: '3h ago', text: 'The Euro 2016 final story gives me chills every time. Injured, on crutches, coaching from the sideline. That\'s leadership.', upvotes: 892 },
+      { user: 'fit_engineer', avatar: '#4caf7d', time: '2h ago', text: 'Applied Ronaldo\'s recovery protocol to my own fitness. The 90-minute sleep cycle thing is legit backed by science. Changed my energy levels completely.', upvotes: 234 },
+      { user: 'footy_analyst', avatar: '#5b9bd5', time: '1h ago', text: '900+ goals is insane when you think about it. That\'s scoring roughly once every game for 20 years. Consistency is the ultimate talent.', upvotes: 445 },
+      { user: 'build_the_brand', avatar: '#9b7ed8', time: '30min ago', text: 'Most athletes go broke. Ronaldo built an empire. The CR7 brand move is a case study in leveraging peak fame for long-term wealth.', upvotes: 167 },
+    ]
+  },
+
+  // ALEXANDER THE GREAT
+  {
+    id: 'alexander',
+    image: 'images/alexander.png',
+    category: 'history',
+    sub: 'm/history',
+    author: 'u/ancient_strategist',
+    tag: 'history',
+    tagLabel: 'HISTORY',
+    time: '8h ago',
+    votes: 3421,
+    commentCount: 289,
+    title: 'Alexander the Great: Conquered the Known World by 30 — His Mindset of Total Focus and Resilience Amidst Tremendous Difficulty',
+    preview: 'By age 30, he had built one of the largest empires in history, never losing a single battle. King of Macedon, Conqueror of the Persian Empire, arguably the greatest military mind who ever lived. What drove him?',
+    content: `
+      <p>Alexander III of Macedon was 20 years old when he became king. By 30, he had conquered the entire Persian Empire, Egypt, and parts of India — building one of the largest empires in ancient history. <strong>He never lost a single battle.</strong></p>
+      <h3>The Making of a Conqueror</h3>
+      <p>Educated by Aristotle himself, Alexander wasn't just a warrior — he was a strategic genius who understood psychology, logistics, and the power of leading from the front. While other kings commanded from the rear, Alexander charged first into battle. He was wounded countless times. He didn't care.</p>
+      <h3>Focus Under Impossible Odds</h3>
+      <p>At the Battle of Gaugamela, Alexander's army of 47,000 faced Darius III's force of over 200,000. The Persian army had war elephants, scythed chariots, and overwhelming numbers. Alexander studied the terrain, identified a gap in the Persian line, and personally led the cavalry charge directly at Darius. The Persian emperor fled. The empire fell.</p>
+      <div class="highlight-box">Put yourself in Alexander's mindset — his levels of focus and resilience amongst tremendous difficulty. He didn't see obstacles. He saw openings.</div>
+      <h3>The Stoic Before Stoicism</h3>
+      <p>When Alexander encountered the Gordian Knot — a legendary knot that supposedly could only be untied by the future ruler of Asia — he didn't sit and puzzle over it. He drew his sword and cut it in half. The lesson: sometimes the solution isn't more thinking. It's decisive action.</p>
+      <h3>The Dark Side and the Lesson</h3>
+      <p>Alexander's story also carries warnings. His ambition consumed him. He pushed his army beyond human limits. He died at 32, possibly from exhaustion and excess. The lesson isn't to replicate his life — it's to extract the <strong>mindset</strong>: the ability to see what others thought impossible and simply do it.</p>
+      <h3>What Alexander Can Teach a Modern Builder</h3>
+      <p>Lead from the front. Face the hardest problems yourself. Study relentlessly. Move fast. And understand that the impossible is usually just the untried.</p>
+    `,
+    comments: [
+      { user: 'history_buff_dev', avatar: '#9b7ed8', time: '7h ago', text: 'The Gordian Knot is the greatest problem-solving story ever told. Stop overthinking. Sometimes you just need to cut through it.', upvotes: 445 },
+      { user: 'war_strategy_101', avatar: '#d45a5a', time: '5h ago', text: 'Gaugamela is still studied at military academies worldwide. 47K vs 200K and Alexander won decisively. That\'s what preparation + audacity looks like.', upvotes: 321 },
+      { user: 'stoic_reader', avatar: '#e07a3a', time: '3h ago', text: 'Alexander sleeping with the Iliad under his pillow every night is the ancient equivalent of keeping your goals visible. Constant reinforcement.', upvotes: 189 },
+      { user: 'mindset_monk', avatar: '#4caf7d', time: '1h ago', text: '"The impossible is usually just the untried." Putting this on my wall next to the Marcus Aurelius quotes.', upvotes: 267 },
+    ]
+  },
+
+  {
+    id: 'api-design',
+    image: 'images/restapi.png',
+    category: 'tech',
+    sub: 'm/programming',
+    author: 'u/api_craftsman',
+    tag: 'tech',
+    tagLabel: 'TECH',
+    time: '5h ago',
+    votes: 1678,
+    commentCount: 198,
+    title: 'REST API Design Best Practices: The Principles Behind APIs Used by Millions (Lessons from Building Enterprise APIs)',
+    preview: 'Building an API isn\'t hard. Building an API that 10,000 developers actually want to use is a different game entirely. Here are the principles that separate amateur APIs from professional ones...',
+    content: `
+      <p>Anyone can slap together a CRUD API. The art is building one that scales, is intuitive, handles errors gracefully, and doesn't make consuming developers want to tear their hair out. Here's what I've learned building APIs at enterprise scale.</p>
+      <h3>1. Resource-Oriented Design</h3>
+      <p>URLs should represent resources (nouns), not actions (verbs). <code>/devices/{id}/compliance</code> tells you exactly what you're getting. <code>/getDeviceComplianceStatus</code> is RPC cosplaying as REST.</p>
+      <h3>2. Consistent Error Responses</h3>
+      <p>Every error should return a consistent shape: status code, error code, human-readable message, and a correlation ID for debugging. Your consumers will thank you at 3 AM during an outage.</p>
+      <h3>3. Pagination Is Not Optional</h3>
+      <p>If your endpoint can return more than 100 items, it needs pagination. Use cursor-based pagination over offset-based — it's more performant and handles real-time data better.</p>
+      <h3>4. Versioning Strategy</h3>
+      <p>URL versioning (<code>/v1/devices</code>) is the most pragmatic approach. Header versioning is "cleaner" in theory but a nightmare in practice. Pick one and be consistent.</p>
+      <div class="highlight-box">The best API documentation is the one you never need to read because the API is so intuitive. Design your URLs, status codes, and response shapes to be self-documenting.</div>
+      <h3>5. Authentication & Authorization</h3>
+      <p>Use OAuth 2.0 with Bearer tokens. In enterprise contexts (like Microsoft's Graph API or Intune APIs), service-to-service auth uses client credentials flow, while user-facing apps use authorization code flow. Understanding these flows deeply is essential for enterprise development.</p>
+    `,
+    comments: [
+      { user: 'api_reviewer', avatar: '#5b9bd5', time: '4h ago', text: 'Cursor-based pagination is the way. We switched from offset-based and our p99 latency on list endpoints dropped by 60%.', upvotes: 178 },
+      { user: 'graph_api_fan', avatar: '#4caf7d', time: '3h ago', text: 'Microsoft Graph is a great example of consistent API design at scale. Thousands of endpoints, all following the same patterns. Worth studying.', upvotes: 134 },
+      { user: 'rest_vs_graphql', avatar: '#e07a3a', time: '2h ago', text: 'Hot take: REST is still the right choice for 90% of APIs. GraphQL solves a real problem but most teams don\'t have that problem.', upvotes: 267 },
+    ]
+  },
+
+  // MICHAEL PHELPS
+  {
+    id: 'phelps',
+    image: 'images/phelps.png',
+    category: 'sports',
+    sub: 'm/greatness',
+    author: 'u/olympic_stories',
+    tag: 'sports',
+    tagLabel: 'SPORTS',
+    time: '6h ago',
+    votes: 4123,
+    commentCount: 356,
+    title: 'Michael Phelps: 23 Olympic Gold Medals — The Most Decorated Olympian in History and the Routine That Made Him Unstoppable',
+    preview: '23 golds. 28 total Olympic medals. He didn\'t miss a single day of training for 6 straight years — including Christmases and birthdays. The story of how mundane consistency creates legendary results...',
+    content: `
+      <p>Michael Phelps holds 23 Olympic gold medals. The next closest swimmer has 9. That gap isn't talent — it's <strong>what he did every single day for two decades</strong>.</p>
+      <h3>The Routine</h3>
+      <p>From age 14 to 20, Phelps trained every single day. No days off. Not Christmas. Not his birthday. Not when he was sick. His coach, Bob Bowman, estimated that by training 365 days a year while competitors trained 300-320, Phelps gained a 5-6 week advantage per year. Over 6 years, that's nearly 8 months of extra training.</p>
+      <h3>The Mental Tapes</h3>
+      <p>Bowman had Phelps visualize every race before sleep. Not just winning — but everything going wrong. Goggles filling with water. False starts. Getting touched out. So when things actually went wrong (his goggles filled with water during the 200m butterfly final in Beijing), he'd already rehearsed the solution. He won gold anyway — swimming blind for the final 100m.</p>
+      <div class="highlight-box">"I think that everything is possible as long as you put your mind to it and you put the work and time into it. I think your mind really controls everything." — Michael Phelps</div>
+      <h3>The Darkness and the Comeback</h3>
+      <p>After London 2012, Phelps fell into deep depression. He's spoken openly about considering suicide, his struggles with alcohol, and the identity crisis that comes when your entire life has been one thing. He got help. He came back for Rio 2016 and won 5 more golds — at age 31, in a young man's sport.</p>
+      <h3>The Lesson</h3>
+      <p>Phelps didn't have a secret. He had a <strong>system</strong>. Daily training + mental rehearsal + zero days off = a level of preparation that made winning feel inevitable. The formula works for swimming, for engineering, for anything.</p>
+    `,
+    comments: [
+      { user: 'discipline_daily', avatar: '#5b9bd5', time: '5h ago', text: 'Training on Christmas isn\'t insanity — it\'s understanding that your competition is resting. That 5-6 week annual advantage is COMPOUND.', upvotes: 523 },
+      { user: 'mental_game', avatar: '#4caf7d', time: '4h ago', text: 'The goggles story in Beijing is the greatest sports anecdote ever. He literally won gold blind because he\'d rehearsed it in his mind. Preparation is everything.', upvotes: 678 },
+      { user: 'comeback_kid', avatar: '#e07a3a', time: '2h ago', text: 'His openness about depression saved lives. Showing that the greatest olympian ever struggled mentally made it okay for others to get help.', upvotes: 345 },
+      { user: 'swimmer_coach', avatar: '#9b7ed8', time: '1h ago', text: '28 medals. 39 world records. And it all came down to showing up every single day. There is no shortcut to greatness.', upvotes: 234 },
+    ]
+  },
+
+  // QUOTE CARD
+  {
+    id: 'quote-comfort',
+    type: 'quote',
+    category: 'mindset',
+    quote: '"The ordinary man seeks comfort. The great man sacrifices it."',
+    source: '— MorningBase Daily',
+    votes: 2891,
+  },
+
+  // STOICISM
+  {
+    id: 'stoicism-deep',
+    image: 'images/aurelius.png',
+    category: 'mindset',
+    sub: 'm/stoicism',
+    author: 'u/daily_stoic',
+    tag: 'mindset',
+    tagLabel: 'MINDSET',
+    time: '3h ago',
+    votes: 3156,
+    commentCount: 267,
+    title: 'Stoicism for Engineers: Why Marcus Aurelius, Seneca, and Epictetus Are More Relevant Now Than Ever',
+    preview: 'The ancient Stoics weren\'t just philosophers — they were emperors, advisors, and former slaves who built mental frameworks for thriving under extreme pressure. Here\'s why every engineer and builder should study Stoicism...',
+    content: `
+      <p>Stoicism isn't about suppressing emotions or being cold. It's a <strong>practical operating system for the mind</strong> — developed by people who faced real adversity and needed real solutions.</p>
+      <h3>The Three Stoic Pillars</h3>
+      <p><strong>Marcus Aurelius</strong> — Roman Emperor, the most powerful man in the world, who wrote private journal entries reminding himself to be humble, disciplined, and focused. His <em>Meditations</em> was never meant to be published. It's raw, unfiltered self-coaching.</p>
+      <p><strong>Seneca</strong> — Advisor to Emperor Nero, one of the wealthiest men in Rome, who wrote about the shortness of life and the danger of wasting time on things that don't matter. "It is not that we have a short time to live, but that we waste a great deal of it."</p>
+      <p><strong>Epictetus</strong> — Born a slave. Literally owned by another human. Yet he developed one of the most powerful mental frameworks in history: the dichotomy of control. Focus only on what you can control. Release everything else.</p>
+      <div class="highlight-box">"You have power over your mind — not outside events. Realize this, and you will find strength." — Marcus Aurelius</div>
+      <h3>Stoicism for Builders</h3>
+      <p>Deployment failed at 2 AM? Focus on the fix, not the frustration. Got rejected from a job? Focus on the next application, not the sting. Colleague taking credit for your work? Focus on building more, not on what's "fair."</p>
+      <p>The Stoics would have been incredible engineers. They understood systems thinking, cause and effect, and the discipline required to build things that last. Marcus Aurelius ran the Roman Empire — the most complex distributed system of its era.</p>
+      <h3>Daily Practice</h3>
+      <p>Morning: Premeditatio malorum — imagine what could go wrong today and prepare mentally. Evening: Review your day. Where did you react emotionally when you could have responded rationally? This isn't about perfection — it's about <strong>progress</strong>.</p>
+      <p>"Waste no more time arguing about what a good man should be. Be one." — Marcus Aurelius</p>
+    `,
+    comments: [
+      { user: 'meditations_daily', avatar: '#9b7ed8', time: '2h ago', text: 'I read one passage from Meditations every morning before work. It\'s like a mental armor you put on. Changes how you respond to everything that day.', upvotes: 345 },
+      { user: 'devops_stoic', avatar: '#5b9bd5', time: '1h ago', text: '"Marcus Aurelius ran the Roman Empire — the most complex distributed system of its era." Incredible way to put it 😂 He\'d definitely understand service mesh.', upvotes: 567 },
+      { user: 'epictetus_fan', avatar: '#e07a3a', time: '45min ago', text: 'Epictetus was a SLAVE who became one of the most influential thinkers in Western history. If that isn\'t proof that your circumstances don\'t define you, nothing is.', upvotes: 234 },
+      { user: 'calm_coder', avatar: '#4caf7d', time: '30min ago', text: 'The dichotomy of control literally fixed my anxiety around code reviews. I can control the quality of my code. I can\'t control how people receive it. Freedom.', upvotes: 189 },
+    ]
+  },
+
+  // FLOYD MAYWEATHER
+  {
+    id: 'mayweather',
+    image: 'images/floyd.png',
+    category: 'sports',
+    sub: 'm/greatness',
+    author: 'u/fight_game',
+    tag: 'sports',
+    tagLabel: 'SPORTS',
+    time: '7h ago',
+    votes: 2876,
+    commentCount: 345,
+    title: 'Floyd Mayweather: 50-0 Undefeated, 5-Division World Champion — The Most Calculated Fighter Who Ever Lived',
+    preview: 'Love him or hate him, nobody has done what Floyd did: 50 professional fights, 50 wins, zero losses across 5 weight classes. His secret wasn\'t power — it was preparation, defense, and an IQ that made opponents look amateur...',
+    content: `
+      <p>Floyd Mayweather Jr. retired with a record that will likely never be matched: <strong>50 wins, 0 losses</strong>. Five weight divisions. Former WBA and WBC champion. Over $1 billion in career earnings. The most financially successful and statistically perfect boxer in history.</p>
+      <h3>The Fighter's IQ</h3>
+      <p>Mayweather wasn't the hardest hitter, the fastest, or the most athletic boxer of his era. What he was — undeniably — was the <strong>smartest</strong>. His defensive mastery was so complete that elite fighters would throw hundreds of punches and land almost nothing. He made world champions look like amateurs.</p>
+      <p>His shoulder roll defense, his ability to read fighters within 2-3 rounds, his counter-punching precision — all products of obsessive study. Mayweather watched more fight film than anyone in the sport. He could tell you what a fighter was going to throw before they threw it.</p>
+      <div class="highlight-box">"Everybody has a plan until they step in the ring with me. I adjust. That's what separates champions from contenders."</div>
+      <h3>The Work Ethic Behind the Flash</h3>
+      <p>Behind the money and the spectacle was a training camp that would break most humans. Mayweather ran 5-8 miles at 2 AM, trained twice a day, and sparred hundreds of rounds for every fight. His uncle Roger Mayweather drilled defensive techniques into him from childhood until they became reflex.</p>
+      <h3>The Business Mind</h3>
+      <p>Mayweather understood something most athletes don't: <strong>you are the product</strong>. He created Mayweather Promotions, promoted his own fights, and kept a larger share of revenue than any fighter before him. The McGregor fight alone generated over $600 million. He didn't just fight — he built an empire.</p>
+      <h3>The Lesson</h3>
+      <p>Preparation beats talent. Study beats instinct. The person who has done the most homework always wins in the long run — whether it's in the ring, in a codebase, or in a boardroom. Be so prepared that victory feels inevitable.</p>
+    `,
+    comments: [
+      { user: 'boxing_brain', avatar: '#d45a5a', time: '6h ago', text: '50-0 is so absurd that people forget what it means. Half a century of fights against the best in the world and NOT ONE could beat him. That\'s not luck.', upvotes: 345 },
+      { user: 'defensive_master', avatar: '#e07a3a', time: '4h ago', text: 'The shoulder roll is the most elegant defensive technique in any combat sport. Floyd made getting punched at look like an art form.', upvotes: 234 },
+      { user: 'business_of_sports', avatar: '#4caf7d', time: '2h ago', text: 'Promoting his own fights was the real 50-0. He cut out the middlemen and kept the money. Every athlete should study his business model.', upvotes: 456 },
+    ]
+  },
+
+  // PROJECT MANAGEMENT
+  {
+    id: 'pm-practices',
+    image: 'images/projectmanagement.png',
+    category: 'career',
+    sub: 'm/projectManagement',
+    author: 'u/agile_pm',
+    tag: 'career',
+    tagLabel: 'CAREER',
+    time: '4h ago',
+    votes: 1234,
+    commentCount: 167,
+    title: 'Project Management for Engineers: Why Understanding Agile, Scrum, and Sprint Planning Makes You 10x More Valuable',
+    preview: 'The engineers who get promoted fastest aren\'t just great coders — they\'re great communicators who understand how projects actually ship. Here\'s the PM knowledge that separates senior engineers from staff engineers...',
+    content: `
+      <p>You can be the best coder on the team and still watch less technical people get promoted ahead of you. Why? Because promotions aren't about code — they're about <strong>impact</strong>. And impact requires understanding how projects move from idea to shipped product.</p>
+      <h3>Agile Isn't a Buzzword — It's a Survival Strategy</h3>
+      <p>Agile, at its core, is about short feedback loops. Instead of planning everything for 6 months and hoping you're right, you build in 2-week sprints, get feedback, and adjust. The companies that ship fastest (and survive) are the ones that learn fastest.</p>
+      <h3>Scrum Ceremonies That Actually Matter</h3>
+      <p><strong>Sprint Planning:</strong> Where engineers and PMs negotiate what's achievable. The engineers who contribute meaningfully here — who can estimate accurately, flag risks early, and suggest scope adjustments — are gold.</p>
+      <p><strong>Daily Standups:</strong> Not status reports. These are "what's blocking me" sessions. The best standups are under 10 minutes.</p>
+      <p><strong>Retrospectives:</strong> The single most underrated ceremony. Teams that actually retro and improve their process compound their effectiveness over time.</p>
+      <div class="highlight-box">The engineers who get promoted to Staff and Principal level almost always have strong PM instincts. They can break down ambiguous problems, communicate timelines to stakeholders, and drive projects to completion without being managed.</div>
+      <h3>The Skill Stack</h3>
+      <p>Technical depth + PM awareness + communication skills = Staff Engineer trajectory. You don't need a PMP certification. You need to understand scope management, stakeholder communication, and how to break a mountain of work into a sequence of shippable increments.</p>
+    `,
+    comments: [
+      { user: 'staff_eng_path', avatar: '#4caf7d', time: '3h ago', text: 'This is the article I wish I\'d read 5 years ago. I spent years thinking promotions were about code quality. They\'re about impact + communication.', upvotes: 345 },
+      { user: 'scrum_master_j', avatar: '#5b9bd5', time: '2h ago', text: 'Teams that actually run good retros improve 2-3x faster than teams that skip them. It\'s the compound interest of process improvement.', upvotes: 178 },
+      { user: 'pm_turned_eng', avatar: '#e07a3a', time: '1h ago', text: 'Came from PM to engineering. The PMs who understand code and the engineers who understand project management are the most valuable people in any org.', upvotes: 234 },
+    ]
+  },
+
+  // RAY LEWIS
+  {
+    id: 'ray-lewis',
+    image: 'images/raylewis.png',
+    category: 'sports',
+    sub: 'm/greatness',
+    author: 'u/relentless_spirit',
+    tag: 'sports',
+    tagLabel: 'SPORTS',
+    time: '5h ago',
+    votes: 2654,
+    commentCount: 289,
+    title: 'Ray Lewis: 2× Super Bowl Champion, NFL Hall of Fame — "Every Day You Either Get Better or You Get Worse. You Never Stay the Same."',
+    preview: 'Super Bowl MVP, 13× Pro Bowler, and the most feared linebacker in NFL history. But it\'s his speeches on effort, preparation, and relentless pursuit that make him a legend beyond football...',
+    content: `
+      <p><strong>Ray Lewis</strong> played 17 seasons in the NFL, all with the Baltimore Ravens. 2× Super Bowl Champion. Super Bowl XXXV MVP. 13× Pro Bowler. NFL Hall of Fame Linebacker. But numbers don't capture what made Ray Lewis special.</p>
+      <h3>Be Relentless</h3>
+      <p>Ray Lewis's pre-game speeches are the stuff of legend. He didn't just motivate — he <strong>transformed</strong> the energy of everyone around him. His philosophy was simple: effort is the one thing completely within your control, and if you give maximum effort every single play, the results take care of themselves.</p>
+      <p>"How many of you have ever had a dream? How many of you have ever had a dream and gave up on it because somebody told you it was impossible?"</p>
+      <div class="highlight-box">"Every day you either get better or you get worse. You never stay the same. So if you're not working to get better, you're getting worse. There is no neutral."</div>
+      <h3>The Preparation</h3>
+      <p>Lewis studied game film more than any linebacker of his era. He could predict plays before they happened — not from instinct, but from <strong>thousands of hours of preparation</strong>. He knew offensive formations better than some offensive coordinators.</p>
+      <h3>The Final Ride</h3>
+      <p>In his final season (2012), Lewis tore his triceps and was supposed to be done. He came back for the playoffs, led the Ravens to the Super Bowl, and won it. His last game was a Super Bowl victory. That's how legends write their ending.</p>
+      <h3>The Lesson for Builders</h3>
+      <p>You're either improving or declining — there is no standing still. The code you wrote last month should look amateur to you today. If it doesn't, you're not growing. Be relentless in your pursuit of excellence.</p>
+    `,
+    comments: [
+      { user: 'gridiron_gospel', avatar: '#d45a5a', time: '4h ago', text: 'The "no neutral" quote is tattooed in my mind. Every day I ask myself: did I get better today? If the answer is no, I go learn something before bed.', upvotes: 456 },
+      { user: 'ravens_nation', avatar: '#9b7ed8', time: '3h ago', text: 'Winning the Super Bowl in your final game is actual movie script material. But Ray Lewis lived it.', upvotes: 345 },
+      { user: 'morning_grinder', avatar: '#e07a3a', time: '1h ago', text: '"Effort is the one thing completely within your control." Saving this for every time I don\'t feel like studying.', upvotes: 267 },
+    ]
+  },
+
+  // CHARLES OLIVEIRA
+  {
+    id: 'do-bronx',
+    image: 'images/dobronx.png',
+    category: 'sports',
+    sub: 'm/mma',
+    author: 'u/fight_spirit',
+    tag: 'sports',
+    tagLabel: 'SPORTS',
+    time: '6h ago',
+    votes: 2345,
+    commentCount: 234,
+    title: 'Charles "Do Bronx" Oliveira: From Getting Finished 7 Times to UFC Lightweight Champion — The Greatest Comeback Story in MMA',
+    preview: 'They counted him out after every loss. He was dropped from title contention multiple times. Then he went on a 11-fight win streak and became champion. Most submission wins in UFC history...',
+    content: `
+      <p>Charles Oliveira's story is the greatest comeback in combat sports. In his early UFC career, he lost 7 fights — many by stoppage. Critics said he didn't have the chin. He didn't have the heart. He was a gatekeeper at best.</p>
+      <h3>The Transformation</h3>
+      <p>Instead of quitting, Oliveira completely rebuilt himself. He moved to lightweight (155 lbs), rebuilt his striking from the ground up, improved his wrestling, and maintained the most dangerous submission game in UFC history. The result? An 11-fight win streak culminating in the UFC Lightweight Championship.</p>
+      <h3>The Records</h3>
+      <p><strong>Most submission wins in UFC history.</strong> Most finishes in UFC history. Most Performance of the Night bonuses. He doesn't just win — he finishes.</p>
+      <div class="highlight-box">"They always counted me out. I was never supposed to be here. But I kept working, kept believing, and here I am — champion." — Charles Oliveira</div>
+      <h3>Growing Up in Favelas</h3>
+      <p>Oliveira grew up in Guarujá, Brazil, in extreme poverty. He started training to survive, not to become champion. Every fight he takes carries the weight of his community, his family, and every person who was told they'd never make it.</p>
+      <h3>The Lesson</h3>
+      <p>Your early failures don't define your ceiling. The person who gets knocked down 7 times and gets up 8 is more dangerous than the person who never fell. Do Bronx is living proof that <strong>persistence beats everything</strong>.</p>
+    `,
+    comments: [
+      { user: 'mma_analyst', avatar: '#d45a5a', time: '5h ago', text: 'Going from being finished 7 times to the most finishes in UFC history is objectively the greatest character arc in the sport.', upvotes: 345 },
+      { user: 'jiu_jitsu_life', avatar: '#4caf7d', time: '3h ago', text: 'His submission game is otherworldly. He can finish you from positions that shouldn\'t be possible. Pure artistry on the ground.', upvotes: 234 },
+      { user: 'never_quit', avatar: '#e07a3a', time: '2h ago', text: 'The favela to champion pipeline. No silver spoons, no shortcuts. Just work.', upvotes: 456 },
+    ]
+  },
+
+  // QUOTE
+  {
+    id: 'quote-leader',
+    type: 'quote',
+    category: 'mindset',
+    quote: '"A leader is not born — he is made in the moments where others hesitate."',
+    source: '— MorningBase Daily',
+    votes: 1567,
+  },
+
+  // LUKE BELMAR
+  {
+    id: 'luke-belmar',
+    image: 'images/belmar.png',
+    category: 'career',
+    sub: 'm/investing',
+    author: 'u/capital_markets',
+    tag: 'career',
+    tagLabel: 'CAREER',
+    time: '5h ago',
+    votes: 1987,
+    commentCount: 234,
+    title: 'Luke Belmar: From Immigrant to Multi-Million Dollar Capital Markets Investor — How Self-Education and Obsession Built Wealth',
+    preview: 'No trust fund. No Ivy League degree. Luke Belmar built his fortune through obsessive self-education in capital markets, early crypto positioning, and building digital business systems...',
+    content: `
+      <p>Luke Belmar's story breaks every traditional rule about wealth building. No college degree. No family wealth. No corporate ladder. He built a multi-million dollar investment portfolio through <strong>relentless self-education and early conviction</strong>.</p>
+      <h3>The Self-Education Obsession</h3>
+      <p>Belmar has spoken extensively about his approach to learning: consume everything, test it in the real world, keep what works, discard what doesn't. He studied capital markets, macroeconomics, cryptocurrency, and digital business models — not in a classroom, but through thousands of hours of independent research and real-money experiments.</p>
+      <h3>Capital Markets & Investing</h3>
+      <p>Belmar's approach to investing is thesis-driven. He doesn't chase trends — he identifies macroeconomic shifts before they become obvious and positions early. His early conviction in cryptocurrency and digital assets, combined with disciplined position sizing, generated outsized returns.</p>
+      <div class="highlight-box">"The information is free. The discipline to act on it is priceless. Everyone has access to the same books, the same internet, the same data. What separates winners is execution."</div>
+      <h3>Building Systems, Not Just Income</h3>
+      <p>Beyond investing, Belmar built digital business systems — e-commerce, content, community — that generate revenue independently. His philosophy: build assets that work while you sleep, then redeploy that capital into investments that compound.</p>
+      <h3>The Lesson for Engineers</h3>
+      <p>Your engineering salary is your seed capital. What you do with it determines whether you're wealthy at 40 or still trading time for money. Learn investing, understand markets, and build systems. The same logical thinking that makes you a good engineer makes you a good investor.</p>
+    `,
+    comments: [
+      { user: 'wealth_builder_eng', avatar: '#4caf7d', time: '4h ago', text: 'As a software engineer making good money, the investing section hits hard. Most of us optimize our code but not our capital. Time to change that.', upvotes: 345 },
+      { user: 'self_made_grind', avatar: '#e07a3a', time: '3h ago', text: '"The information is free, the discipline to act on it is priceless." Top 5 quote ever. Everything you need to learn is on YouTube and in books.', upvotes: 234 },
+      { user: 'crypto_thesis', avatar: '#5b9bd5', time: '1h ago', text: 'The thesis-driven approach to investing is the engineering mindset applied to markets. Analyze, hypothesize, test, iterate. Same loop.', upvotes: 189 },
+    ]
+  },
+
+  // ANDREW TATE
+  {
+    id: 'andrew-tate',
+    image: 'images/tate.png',
+    category: 'sports',
+    sub: 'm/discipline',
+    author: 'u/combat_mindset',
+    tag: 'sports',
+    tagLabel: 'SPORTS',
+    time: '8h ago',
+    votes: 2345,
+    commentCount: 456,
+    title: 'Andrew Tate: 4× Kickboxing World Champion — The Discipline Behind the Persona Most People Never Talk About',
+    preview: 'Before the viral clips, before the internet fame, there was a fighter who won 4 world kickboxing championships through brutal training discipline and an unbreakable competitive mentality...',
+    content: `
+      <p>Whatever your opinion on Andrew Tate the internet personality, Andrew Tate the fighter is undeniable: <strong>4× ISKA Kickboxing World Champion</strong>, with a professional record built on years of grueling training camps and world-class competition.</p>
+      <h3>The Fighter's Discipline</h3>
+      <p>Tate grew up watching his father, Emory Tate (an International Chess Master), compete at the highest levels. That competitive DNA transferred directly to combat sports. Tate moved to Eastern Europe to train, living in spartan conditions and training multiple times a day. No shortcuts. No comfort.</p>
+      <h3>4 World Titles</h3>
+      <p>Winning one world title in kickboxing is a lifetime achievement. Winning four requires a level of sustained excellence that most people can't comprehend. Each title camp is months of brutal preparation — running, sparring, drilling, cutting weight, managing injuries — all leading to a single fight where everything is on the line.</p>
+      <div class="highlight-box">"Discipline is doing the hard thing when you don't feel like it. Anyone can work hard when they're motivated. Champions work hard when they're not."</div>
+      <h3>The Viral Strategist</h3>
+      <p>After fighting, Tate became one of the most viral figures on the internet. Regardless of opinions on his content, his understanding of attention, distribution, and building a personal brand is studied in marketing circles. He went from fighter to global name recognition in under two years through a deliberate content strategy.</p>
+      <h3>The Transferable Lesson</h3>
+      <p>The discipline required to become a world champion in any combat sport is directly transferable: the ability to endure discomfort, to train when motivation is gone, and to perform under pressure. These are the same qualities that separate average engineers from exceptional ones.</p>
+    `,
+    comments: [
+      { user: 'fighter_mentality', avatar: '#d45a5a', time: '7h ago', text: '4 world titles in kickboxing is elite. People forget the actual fighting career because of the internet stuff. The discipline was real.', upvotes: 345 },
+      { user: 'marketing_student', avatar: '#5b9bd5', time: '5h ago', text: 'The content strategy — getting fans to repost clips to gain algorithmic advantage — was genuinely innovative from a marketing perspective. Studied it in my digital marketing class.', upvotes: 178 },
+      { user: 'discipline_focus', avatar: '#e07a3a', time: '3h ago', text: '"Champions work hard when they\'re not motivated." This is the line. Motivation is a visitor. Discipline is a resident.', upvotes: 567 },
+    ]
+  },
+
+  // ASYNC PROGRAMMING
+  {
+    id: 'async-csharp',
+    image: 'images/asyncawait.png',
+    category: 'tech',
+    sub: 'm/csharp',
+    author: 'u/async_expert',
+    tag: 'tech',
+    tagLabel: 'TECH',
+    time: '2h ago',
+    votes: 1345,
+    commentCount: 134,
+    title: 'Async/Await in C# Demystified: How ASP.NET Core Handles 10,000 Concurrent Requests Without Breaking a Sweat',
+    preview: 'The async/await pattern in C# is the most important concept for building scalable web services. Here\'s exactly what happens under the hood when you write "await" and why it matters for enterprise performance...',
+    content: `
+      <p>Every ASP.NET Core application you build relies on async/await to handle concurrent requests efficiently. But what actually happens when the runtime hits an <code>await</code>?</p>
+      <h3>The Thread Pool Secret</h3>
+      <p>When you await an I/O operation (database query, HTTP call, file read), the current thread is <strong>released back to the thread pool</strong>. It doesn't sit there waiting. This means that thread can go handle another request while your I/O operation completes. This is how ASP.NET Core handles thousands of concurrent requests with relatively few threads.</p>
+      <h3>The State Machine</h3>
+      <p>Under the hood, the C# compiler transforms your async method into a state machine. Each <code>await</code> point becomes a state. When the I/O completes, the continuation is scheduled, and the method resumes from where it left off — possibly on a different thread.</p>
+      <div class="highlight-box">In enterprise products like Microsoft Intune, async programming is critical. A single compliance check might call 5+ downstream services. Without async, each request would block a thread for the duration of all those calls. With async, the same pool of threads handles 100x more concurrent requests.</div>
+      <h3>Common Mistakes</h3>
+      <p><strong>.Result and .Wait():</strong> These block the calling thread and can cause deadlocks in ASP.NET Core. Always use await instead.</p>
+      <p><strong>Async void:</strong> Only use for event handlers. In all other cases, return Task. Async void methods swallow exceptions and can't be awaited.</p>
+      <p><strong>Unnecessary async:</strong> If you're just returning a Task without any other logic, don't mark the method async. Just return the Task directly to avoid the state machine overhead.</p>
+      <h3>The Performance Impact</h3>
+      <p>A properly async ASP.NET Core app can handle 10,000+ concurrent requests on a single server. The same app written synchronously might max out at 200-500 before thread pool starvation kicks in. Understanding async isn't optional — it's the difference between an app that scales and one that collapses under load.</p>
+    `,
+    comments: [
+      { user: 'perf_engineer', avatar: '#5b9bd5', time: '1h ago', text: 'We measured the impact of converting our sync Intune service calls to async. Throughput increased 8x. EIGHT times. Same hardware. Just async.', upvotes: 456 },
+      { user: 'dotnet_mentor', avatar: '#4caf7d', time: '45min ago', text: 'The .Result deadlock trap catches SO many junior devs. If you\'re reading this and using .Result in ASP.NET Core, stop immediately.', upvotes: 234 },
+      { user: 'cloud_scale_dev', avatar: '#e07a3a', time: '30min ago', text: 'The state machine explanation is the clearest I\'ve seen. Understanding what the compiler generates is what separates senior from mid-level C# devs.', upvotes: 167 },
+    ]
+  },
+
+  // JESUS
+  {
+    id: 'jesus-focus',
+    image: 'images/jesus.png',
+    category: 'faith',
+    sub: 'm/faith',
+    author: 'u/daily_word',
+    tag: 'faith',
+    tagLabel: 'FAITH',
+    time: '1h ago',
+    votes: 4567,
+    commentCount: 234,
+    title: 'Jesus: The Ultimate Example of Purpose, Focus, and Leading by Serving Others',
+    preview: 'He had 3 years of public ministry and changed the entire course of human history. His message of love, sacrifice, and purpose has endured for 2,000 years. What can we learn from how He approached His mission?',
+    content: `
+      <p>No figure in human history has had a greater impact than <strong>Jesus Christ</strong>. In just three years of public ministry, He laid the foundation for a movement that would shape civilizations, inspire billions, and endure for over 2,000 years.</p>
+      <h3>Focus and Purpose</h3>
+      <p>Jesus knew exactly what He came to do. Despite every distraction, every temptation, every attempt to pull Him off course, He stayed focused on His mission. In the wilderness, tempted with power over all kingdoms of the world, He said no. That's focus at the ultimate level — saying no to <strong>everything</strong> when you know what you're meant to do.</p>
+      <div class="highlight-box">"I am the way, the truth, and the life." — John 14:6</div>
+      <h3>Leadership Through Serving</h3>
+      <p>Jesus led by washing feet. The most powerful leader in human history demonstrated that true greatness comes through service. He didn't demand respect — He earned it by putting others first. In a world obsessed with status and titles, this model of leadership is more revolutionary now than ever.</p>
+      <h3>Walking Toward the Pain</h3>
+      <p>Jesus didn't avoid suffering — He walked directly toward it. Gethsemane. The cross. He knew what was coming and chose it anyway, because the mission was bigger than the pain. "Walk towards the pain, everyone else runs."</p>
+      <h3>The Lesson</h3>
+      <p>Whatever you believe, the pattern of Jesus' life is undeniable: clarity of purpose, refusal of distraction, leadership through service, and willingness to endure whatever the mission requires. Build your life around purpose, not comfort.</p>
+      <div class="highlight-box">"For though the righteous fall seven times, they rise again, but the wicked stumble when calamity strikes." — Proverbs 24:16</div>
+    `,
+    comments: [
+      { user: 'morning_faith', avatar: '#c8b478', time: '45min ago', text: 'Three years of ministry changed the entire trajectory of human civilization. That\'s what happens when purpose meets absolute focus.', upvotes: 678 },
+      { user: 'servant_leader', avatar: '#4caf7d', time: '30min ago', text: 'Washing feet as a leadership model is still the most counter-cultural idea in the world. Every leader should study it.', upvotes: 345 },
+      { user: 'proverbs_daily', avatar: '#9b7ed8', time: '15min ago', text: 'Proverbs 24:16 is the verse I come back to every time I fail at something. Seven times down, eight times up. That\'s the standard.', upvotes: 456 },
+    ]
+  },
+
+  // QUOTE
+  {
+    id: 'quote-walk',
+    type: 'quote',
+    category: 'mindset',
+    quote: '"Walk towards the pain. Everyone else runs."',
+    source: '— MorningBase Daily',
+    votes: 3456,
+  },
+
+  // DISTRIBUTED SYSTEMS
+  {
+    id: 'distributed-systems',
+    image: 'images/distributedsystem.png',
+    category: 'tech',
+    sub: 'm/systemDesign',
+    author: 'u/distributed_guru',
+    tag: 'tech',
+    tagLabel: 'TECH',
+    time: '9h ago',
+    votes: 1890,
+    commentCount: 212,
+    title: 'Distributed Systems 101: CAP Theorem, Eventual Consistency, and How Microsoft Intune Serves Millions of Devices Globally',
+    preview: 'Enterprise cloud products don\'t run on a single server. They\'re distributed across dozens of data centers worldwide. Here\'s how concepts like the CAP theorem and eventual consistency actually work in production...',
+    content: `
+      <p>If you're building or working on enterprise cloud services, understanding distributed systems isn't a nice-to-have — it's the foundation of everything you do. Let's break down the core concepts with real-world examples.</p>
+      <h3>The CAP Theorem</h3>
+      <p>In a distributed system, you can only guarantee two of three properties: <strong>Consistency</strong> (every read returns the most recent write), <strong>Availability</strong> (every request gets a response), and <strong>Partition Tolerance</strong> (the system works despite network failures between nodes).</p>
+      <p>Since network partitions are inevitable in distributed systems, you're really choosing between consistency and availability. Banking systems choose consistency (you'd rather see an error than a wrong balance). Social media chooses availability (it's fine if your post takes 2 seconds to show up for all users).</p>
+      <h3>Eventual Consistency</h3>
+      <p>Most enterprise cloud services use eventual consistency. When you update a device's compliance state in Intune, that change propagates across data centers over seconds or minutes. Queries in different regions might see slightly different data briefly, but they'll converge to the same state. This is the tradeoff that allows serving millions of devices globally with low latency.</p>
+      <div class="highlight-box">Understanding why your compliance recalculation result might take a moment to appear globally is understanding eventual consistency. It's not a bug — it's a deliberate architectural decision that enables planet-scale service delivery.</div>
+      <h3>Multi-Tenancy</h3>
+      <p>Enterprise cloud services serve thousands of organizations (tenants) from shared infrastructure. The challenge: complete data isolation between tenants while sharing compute resources. Microsoft uses tenant-aware routing, per-tenant databases or partitions, and strict authentication boundaries to achieve this.</p>
+      <h3>Service-to-Service Authentication</h3>
+      <p>In a microservices architecture, services need to authenticate with each other. This is typically done using OAuth 2.0 client credentials flow — each service has its own identity and token. In Azure, Managed Identity simplifies this by handling credential management automatically.</p>
+    `,
+    comments: [
+      { user: 'system_architect', avatar: '#5b9bd5', time: '8h ago', text: 'The CAP theorem explanation with banking vs social media is the best analogy I\'ve seen. Finally a way to explain it to non-distributed-systems people.', upvotes: 234 },
+      { user: 'cloud_native_dev', avatar: '#4caf7d', time: '6h ago', text: 'Multi-tenancy is the hardest problem in cloud computing and most people don\'t even know it exists. Every query, every cache lookup, every log entry needs tenant context.', upvotes: 189 },
+      { user: 'intune_team', avatar: '#e07a3a', time: '3h ago', text: 'The eventual consistency section is spot-on. We spent months tuning propagation times to find the right balance between consistency and latency for compliance state.', upvotes: 345 },
+    ]
+  },
+
+  // INVESTING FOR ENGINEERS
+  {
+    id: 'eng-investing',
+    image: 'images/nasdaq.png',
+    category: 'career',
+    sub: 'm/financialFreedom',
+    author: 'u/compound_interest',
+    tag: 'career',
+    tagLabel: 'CAREER',
+    time: '3h ago',
+    votes: 2567,
+    commentCount: 312,
+    title: 'How Software Engineers Are Building Wealth: The Investing Strategies Used by Tech Workers to Reach Financial Freedom by 35',
+    preview: 'Engineers have an unfair advantage in wealth building: high income, analytical thinking, and compound interest awareness. Here\'s the exact playbook engineers are using to build generational wealth...',
+    content: `
+      <p>Software engineers have one of the best starting positions for building wealth: high salaries starting young, analytical minds that understand compound growth, and access to equity compensation. Yet most engineers don't invest optimally. Here's the playbook.</p>
+      <h3>The Foundation: Index Funds</h3>
+      <p>The data is clear: over any 20-year period, broad market index funds (like S&P 500 or total market funds) outperform 90%+ of actively managed funds. Max your tax-advantaged accounts first: 401(k), IRA, HSA. This alone, started at 22 with a software engineer's salary, puts you on track for multi-million dollar retirement.</p>
+      <h3>The RSU Game</h3>
+      <p>If you're at a company like Microsoft, Google, or Amazon, RSUs (Restricted Stock Units) can be a massive part of your compensation. The key decision: hold or diversify? Most financial advisors say diversify — don't have both your income and your investments tied to the same company.</p>
+      <h3>The Side Income Multiplier</h3>
+      <p>Many engineers build additional income streams: open-source sponsorships, technical consulting, SaaS side projects, or content creation. The key is investing this additional income rather than lifestyle-inflating. Side income → invested → compound growth = financial freedom acceleration.</p>
+      <div class="highlight-box">A software engineer who starts investing $3,000/month at 22, with 10% average annual returns, has over $6.5 million by age 45. The same engineer who waits until 30 has less than $3 million. Eight years of delay costs $3.5 million. Start now.</div>
+      <h3>The Mindset Shift</h3>
+      <p>Stop thinking of your salary as spending money. Think of it as seed capital. Every dollar has two lives: the one where you spend it today, and the one where it compounds for 30 years. The engineer who understands this at 22 retires at 40. The one who doesn't works until 65.</p>
+    `,
+    comments: [
+      { user: 'fire_eng', avatar: '#4caf7d', time: '2h ago', text: 'Hit $1M net worth at 29 following almost exactly this playbook. Max 401k, max IRA, index funds, reinvest RSUs. It\'s boring but it works.', upvotes: 567 },
+      { user: 'compound_believer', avatar: '#e07a3a', time: '1h ago', text: 'The "8 years of delay costs $3.5M" stat is the most motivating thing I\'ve ever read about investing. Every year you wait is devastatingly expensive.', upvotes: 345 },
+      { user: 'ms_swe', avatar: '#5b9bd5', time: '45min ago', text: 'At Microsoft, between salary, bonus, and RSUs, you can invest $50k+/year starting as an L61. Do this for 10 years and you\'re set for life.', upvotes: 234 },
+    ]
+  },
+
+  // FOCUS IN TODAY'S WORLD
+  {
+    id: 'deep-focus',
+    image: 'images/focus.png',
+    category: 'mindset',
+    sub: 'm/MorningProtocol',
+    author: 'u/focused_builder',
+    tag: 'mindset',
+    tagLabel: 'MINDSET',
+    time: '2h ago',
+    votes: 3789,
+    commentCount: 412,
+    title: 'The Rarest Skill in 2026 Isn\'t Coding — It\'s Undivided Focus. Almost Nobody Has It Anymore.',
+    preview: 'Look around you. Half the people in any room have their mind split between their phone, a conversation, a notification, a relationship problem, a social media feed. The person who is 100% fully there — fully locked in — is almost extinct...',
+    content: `
+      <p>Here's a truth that should scare you: <strong>almost nobody is fully focused on anything anymore.</strong></p>
+      <p>Walk into any office, any library, any classroom. Watch closely. Half the people are physically present but mentally fragmented. Their phone buzzes and their attention fractures. They're reading a document but thinking about an Instagram story. They're in a meeting but composing a text under the table. They're studying but half their brain is stuck on a conversation from last night — a relationship, drama, something someone said.</p>
+      <h3>The Fragmented Mind Is the Default</h3>
+      <p>Social media trained an entire generation to exist in a permanent state of partial attention. Your brain is toggling between 4-5 mental threads at all times: the work in front of you, the notification you just felt vibrate, the girl or guy you're texting, the story you just watched, the thing you want to buy. You think you're multitasking. You're not. You're <strong>doing five things badly</strong>.</p>
+      <p>Studies show that after a single notification interruption, it takes an average of 23 minutes to return to the same depth of focus. If you're getting pinged every 10 minutes, you never reach deep focus at all. You spend the entire day skating on the surface.</p>
+      <div class="highlight-box">"Focus — saying no to distractions disguised as fun — is the single most important trait of winners along with consistency." This isn't motivational fluff. This is a competitive advantage that almost nobody has.</div>
+      <h3>Half In, Half Out</h3>
+      <p>The most dangerous state isn't being distracted — it's being <strong>half in</strong>. Half your mind on the code, half on a text thread. Half present in a conversation, half scrolling. Half committed to your goals, half chasing dopamine. This state feels productive because you're "doing things." But you're not doing anything with your full capacity.</p>
+      <p>Compare that to someone who is 100% locked in for even 4 hours a day. Four hours of undivided, deep, uninterrupted focus will outproduce 10 hours of fragmented attention every single time.</p>
+      <h3>The People Who Win Are Fully There</h3>
+      <p>Think about every person on this feed. Ronaldo in the gym at 5 AM — not checking his phone between sets. Alexander planning Gaugamela — not half-thinking about something else. Phelps in the pool — 365 days a year, fully present in every stroke. The pattern isn't talent. It's <strong>the ability to be completely, totally, 100% present in what they're doing</strong>.</p>
+      <h3>How to Get It Back</h3>
+      <p>Phone in another room during deep work. No notifications for the first 2 hours of your day. No social media before noon. When you're working, <strong>work</strong>. When you're studying, <strong>study</strong>. When you're with someone, <strong>be with them</strong>. Single-task like your career depends on it — because it does.</p>
+      <p>The person who can sit with one problem for 3 hours without reaching for their phone is more dangerous than someone with twice the talent and half the focus. In a world of scattered minds, <strong>depth is the ultimate edge</strong>.</p>
+    `,
+    comments: [
+      { user: 'deep_work_dev', avatar: '#e07a3a', time: '1h ago', text: 'I started putting my phone in a drawer from 8 AM to 12 PM. My output in those 4 hours exceeds what I used to do in an entire day. It\'s not even close.', upvotes: 678 },
+      { user: 'ex_scroller', avatar: '#5b9bd5', time: '45min ago', text: 'The "half in" section destroyed me because it\'s exactly what I do. I\'m physically at my desk but mentally in 6 different places. Printing this out.', upvotes: 543 },
+      { user: 'no_notifications', avatar: '#4caf7d', time: '30min ago', text: 'Turned off all notifications except calls 6 months ago. People thought I was crazy. My promotion came 4 months later. Coincidence? I don\'t think so.', upvotes: 345 },
+      { user: 'attention_is_all', avatar: '#9b7ed8', time: '20min ago', text: '"23 minutes to return to deep focus after one notification." This stat alone should make everyone turn off their phone during work. We\'re bleeding hours every day.', upvotes: 456 },
+      { user: 'monk_mode_eng', avatar: '#d45a5a', time: '10min ago', text: 'The relationships/girls part is real talk nobody says out loud. If half your mental energy is consumed by texting drama, you have half the brainpower left for building your future.', upvotes: 389 },
+    ]
+  },
+
+  // SOCIAL EMOTIONAL LEARNING & EMPATHY
+  {
+    id: 'sel-empathy',
+    image: 'images/sel.png',
+    category: 'career',
+    sub: 'm/softSkills',
+    author: 'u/human_engineer',
+    tag: 'career',
+    tagLabel: 'CAREER',
+    time: '3h ago',
+    votes: 2456,
+    commentCount: 298,
+    title: 'Social-Emotional Learning Isn\'t Just for Kids — It\'s the Hidden Skill That Separates Good Engineers from Engineering Leaders',
+    preview: 'Empathy, self-awareness, relationship management, emotional regulation — these aren\'t soft skills. They\'re the hardest skills in tech. The engineers who master them lead teams, ship products, and build careers others can\'t...',
+    content: `
+      <p>There's a myth in tech that the best engineers are the ones who write the best code. That's partially true early in your career. But the engineers who reach Staff, Principal, and leadership levels? They all have something in common that has nothing to do with algorithms: <strong>social-emotional intelligence</strong>.</p>
+      <h3>What Is Social-Emotional Learning (SEL)?</h3>
+      <p>SEL covers five core competencies: self-awareness, self-management, social awareness, relationship skills, and responsible decision-making. In plain language: understanding your own emotions, managing them, reading other people, building strong relationships, and making thoughtful choices. These aren't abstract — they show up in engineering every single day.</p>
+      <h3>Empathy in Engineering Is Not Optional</h3>
+      <p>When you're doing a code review and someone's approach is different from yours — do you dismiss it, or do you try to understand <strong>why</strong> they made that choice? When a PM changes requirements mid-sprint — do you react with frustration, or do you consider the business pressure they're under? When a junior dev asks a question you think is obvious — do you make them feel stupid, or do you remember what it felt like to not know?</p>
+      <p><strong>Empathy is the ability to see the world from someone else's position.</strong> In tech, this translates directly to:</p>
+      <ul>
+        <li>Building products users actually need (user empathy)</li>
+        <li>Writing code your teammates can maintain (developer empathy)</li>
+        <li>Giving feedback that helps people grow instead of shutting them down</li>
+        <li>Navigating conflicts without burning bridges</li>
+        <li>Leading teams through ambiguity and stress</li>
+      </ul>
+      <div class="highlight-box">"The engineers who write the best code work alone. The engineers who build the best products work with people. And working with people requires empathy, emotional awareness, and the ability to communicate across different perspectives."</div>
+      <h3>Self-Awareness: The Foundation</h3>
+      <p>Do you know what triggers you? Do you recognize when you're defensive in a code review? When you're frustrated because of ego vs. because of a genuine technical concern? Self-awareness is the ability to observe your own emotional state without being controlled by it. The Stoics called this "the view from above" — stepping back from the situation to see it clearly.</p>
+      <h3>Relationship Management in Tech</h3>
+      <p>Every shipped product is the result of relationships working well. Engineer-to-PM, engineer-to-designer, engineer-to-engineer, team-to-stakeholder. The technical architecture matters, but the human architecture matters more. One toxic interaction can derail a sprint. One empathetic conversation can save a project.</p>
+      <h3>Why This Matters for Your Career</h3>
+      <p>When companies evaluate engineers for leadership roles, they're not just looking at your GitHub. They're asking: Can this person run a team? Can they resolve conflicts? Can they give hard feedback with kindness? Can they represent the team to executives? These are all SEL competencies — and they're <strong>trainable</strong>. You can get better at empathy the same way you get better at C#: practice, reflection, and deliberate effort.</p>
+      <p>The best engineers aren't the ones who are smartest in isolation. They're the ones who make everyone around them better.</p>
+    `,
+    comments: [
+      { user: 'eng_manager_lisa', avatar: '#4caf7d', time: '2h ago', text: 'I promote based on impact, and impact requires influence, and influence requires empathy. The pure coders plateau at senior. The empathetic ones become leaders.', upvotes: 567 },
+      { user: 'code_review_karma', avatar: '#5b9bd5', time: '1h ago', text: 'Changed how I do code reviews after reading something similar. Instead of "this is wrong" I now ask "help me understand this approach." The team dynamic completely shifted.', upvotes: 345 },
+      { user: 'junior_to_staff', avatar: '#e07a3a', time: '45min ago', text: 'The junior dev question hit hard. I remember being terrified to ask questions early in my career because seniors made me feel dumb. Now I make sure every intern feels safe asking anything.', upvotes: 456 },
+      { user: 'stoic_empathy', avatar: '#9b7ed8', time: '30min ago', text: 'Connecting SEL to Stoicism is brilliant. Self-awareness IS the Stoic practice of examining your impressions before reacting. Same skill, different framing.', upvotes: 234 },
+      { user: 'product_thinker', avatar: '#d45a5a', time: '15min ago', text: 'User empathy is literally the difference between a feature that gets used and one that gets ignored. Every engineer should spend time watching real users interact with their product.', upvotes: 189 },
+    ]
+  },
+
+  // SMILING & GRATITUDE
+  {
+    id: 'smile-gratitude',
+    image: 'images/gratitude.png',
+    category: 'mindset',
+    sub: 'm/dailyMindset',
+    author: 'u/grateful_grinder',
+    tag: 'mindset',
+    tagLabel: 'MINDSET',
+    time: '1h ago',
+    votes: 2987,
+    commentCount: 276,
+    title: 'Smile More. Be Grateful More. The Science Says It Will Change Your Brain, Your Relationships, and Your Career.',
+    preview: 'It sounds too simple to be real, but the research is overwhelming: the act of smiling — even when you don\'t feel like it — triggers neurochemical changes that reduce stress, boost creativity, and make people trust you more...',
+    content: `
+      <p>In a world that celebrates grinding, hustling, and relentless intensity, here's a piece of the puzzle most people skip: <strong>smile more and practice gratitude daily</strong>. It's not soft. It's science. And it works.</p>
+      <h3>The Neuroscience of Smiling</h3>
+      <p>When you smile, your brain releases three compounds: dopamine, endorphins, and serotonin. Dopamine increases motivation. Endorphins reduce physical pain. Serotonin acts as a natural antidepressant. The remarkable thing? <strong>Your brain can't distinguish between a real smile and a deliberate one.</strong> Even forcing a smile triggers the same neurochemical cascade.</p>
+      <p>This means you can literally change your brain chemistry on command. Feeling stressed before a big presentation? Smile for 30 seconds. Anxious about a code review? Smile. It sounds ridiculous, but the research from the University of Kansas and dozens of other institutions confirms it: smiling reduces cortisol (stress hormone) levels measurably.</p>
+      <h3>Smiling and Other People</h3>
+      <p>Smiling is contagious — not metaphorically, but neurologically. When you smile at someone, mirror neurons in their brain fire, making them want to smile back. This creates an unconscious sense of trust, warmth, and connection. In professional settings, people who smile more are rated as more competent, more trustworthy, and more likable. In technical environments where collaboration matters, this isn't trivial — it's a career accelerator.</p>
+      <p>Think about the people you love working with. Chances are they smile, they bring energy, they make the room feel lighter. Now think about the brilliant engineer that everyone avoids. Technical skill without warmth creates isolation. <strong>Warmth multiplies your impact.</strong></p>
+      <div class="highlight-box">"Gratitude turns what you have into enough. It doesn't mean you stop striving — it means you build from a foundation of abundance instead of scarcity. And people who build from abundance build bigger."</div>
+      <h3>The Gratitude Practice</h3>
+      <p>Gratitude isn't just feeling thankful — it's a <strong>deliberate practice</strong> that physically rewires your brain. Neuroscience research from UC Davis shows that people who practice gratitude regularly have measurably more activity in the prefrontal cortex (decision-making, focus) and less in the amygdala (fear, stress).</p>
+      <p>The practice is simple: every morning or every night, write down 3 specific things you're grateful for. Not vague things like "my health" — specific things. "The 2 hours of deep focus I had this morning." "The way my teammate helped debug that API issue." "The fact that I have access to world-class learning resources for free."</p>
+      <h3>Gratitude as Fuel, Not Complacency</h3>
+      <p>Some people think gratitude makes you soft or complacent. The opposite is true. Gratitude eliminates the anxiety of "not being enough" and replaces it with the energy of "I have a strong foundation and I'm building from it." Anxious people burn out. Grateful people sustain. The grind is important — but a grateful grind lasts decades. A resentful grind burns out in months.</p>
+      <h3>The Morning Protocol Addition</h3>
+      <p>Add this to your morning: before you open any app, before you check any notification, smile intentionally for 10 seconds and think of one specific thing you're grateful for. It takes 15 seconds. It changes the chemical composition of your brain for the next several hours. Small input, massive output. That's engineering thinking applied to your own mind.</p>
+    `,
+    comments: [
+      { user: 'neuro_curious', avatar: '#4caf7d', time: '45min ago', text: 'The "brain can\'t distinguish real from deliberate smile" fact is wild. I started doing this before standup meetings and my anxiety dropped noticeably within a week.', upvotes: 345 },
+      { user: 'grateful_eng', avatar: '#e07a3a', time: '30min ago', text: 'Been doing the 3 things gratitude journal for 8 months. My stress levels have completely changed. I still work just as hard but I don\'t feel like I\'m drowning anymore.', upvotes: 456 },
+      { user: 'team_lead_mike', avatar: '#5b9bd5', time: '20min ago', text: '"Warmth multiplies your impact" is going in my leadership notes. The best engineers I\'ve managed were both technically excellent AND genuinely warm people.', upvotes: 234 },
+      { user: 'morning_ritual', avatar: '#9b7ed8', time: '10min ago', text: '15 seconds to change your brain chemistry. That\'s the best ROI of any habit I\'ve ever adopted. Smile + gratitude before the phone. Game changer.', upvotes: 389 },
+      { user: 'stoic_smile', avatar: '#c8b478', time: '5min ago', text: 'Connecting gratitude to Marcus Aurelius: "When you arise in the morning, think of what a precious privilege it is to be alive — to breathe, to think, to enjoy, to love." Same practice, 2000 years later.', upvotes: 267 },
+    ]
+  },
+
+  // FINAL QUOTE
+  {
+    id: 'quote-final',
+    type: 'quote',
+    category: 'mindset',
+    quote: '"Your morning belongs to your future self. What you feed your mind first determines the trajectory of your entire day."',
+    source: '— MorningBase',
+    votes: 5678,
+  },
+];
+
+// ===== RENDER FUNCTIONS =====
+
+function renderFeed(filter = 'all') {
+  const feed = document.getElementById('feed');
+  feed.innerHTML = '';
+
+  posts.forEach((post, index) => {
+    if (filter !== 'all' && post.category !== filter) return;
+
+    const el = document.createElement('div');
+    el.className = 'feed-post';
+    el.style.animationDelay = `${index * 0.05}s`;
+
+    if (post.type === 'quote') {
+      el.innerHTML = renderQuoteCard(post);
+    } else {
+      el.innerHTML = renderPostCard(post);
+    }
+
+    feed.appendChild(el);
+  });
+}
+
+function renderPostCard(post) {
+  const pinnedClass = post.pinned ? 'pinned-card' : '';
+  const thumbHtml = post.image
+  ? `<div class="post-thumbnail"
+       style="background-image:url('${post.image}')"></div>`
+  : '';
+  return `
+    <div class="post-card ${pinnedClass}" onclick="openPost('${post.id}')">
+      <div class="post-body">
+        <div class="post-meta">
+          <span class="post-sub">${post.sub}</span>
+          <span class="post-author">• ${post.author} • ${post.time}</span>
+          <span class="post-tag tag-${post.tag}">${post.tagLabel}</span>
+        </div>
+        <div class="post-title">${post.title}</div>
+        ${post.image ? `<img class="post-image" src="${post.image}" />` : ''}
+        <div class="post-preview">${post.preview}</div>
+        <div class="post-footer">
+        <div class="post-votes">
+            <button class="vote-mini" onclick="event.stopPropagation(); vote('${post.id}', 1)">▲</button>
+            <span class="vote-mini-count">${formatVotes(post.votes)}</span>
+            <button class="vote-mini down" onclick="event.stopPropagation(); vote('${post.id}', -1)">▼</button>
+        </div>
+
+        <span class="post-action">💬 ${post.commentCount}</span>
+        <span class="post-action">🔖 Save</span>
+        <span class="post-action">↗ Share</span>
+
+        <span class="post-time">${post.time}</span>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderQuoteCard(post) {
+  return `
+    <div class="quote-card">
+      <blockquote>${post.quote}</blockquote>
+      <cite>${post.source}</cite>
+      <div class="quote-votes">
+        <span onclick="vote('${post.id}', 1)" style="cursor:pointer">▲</span>
+        <strong>${formatVotes(post.votes)}</strong>
+        <span onclick="vote('${post.id}', -1)" style="cursor:pointer">▼</span>
+        <span style="margin-left:8px;">💬 Share this thought</span>
+      </div>
+    </div>
+  `;
+}
+
+function formatVotes(n) {
+  if (n >= 1000) return (n / 1000).toFixed(1) + 'k';
+  return n;
+}
+
+function openPost(id) {
+  const post = posts.find(p => p.id === id);
+  if (!post || post.type === 'quote') return;
+
+  const overlay = document.getElementById('postDetail');
+  const body = document.getElementById('detailBody');
+  const comments = document.getElementById('detailComments');
+  document.getElementById('detailVotes').textContent = formatVotes(post.votes);
+
+const imageHtml = post.image
+  ? `<img class="detail-post-image" src="${post.image}" />`
+  : '';
+
+  body.innerHTML = `
+    <div class="post-meta">
+      <span class="post-sub">${post.sub}</span>
+      <span class="post-author">• ${post.author} • ${post.time}</span>
+      <span class="post-tag tag-${post.tag}">${post.tagLabel}</span>
+    </div>
+    <div class="post-title">${post.title}</div>
+    ${imageHtml}
+    <div class="detail-content">${post.content}</div>
+  `;
+
+  let commentsHtml = `<div class="comments-header">💬 ${post.comments.length} Comments</div>`;
+  post.comments.forEach(c => {
+    commentsHtml += `
+      <div class="comment">
+        <div class="comment-avatar" style="background:${c.avatar}">${c.user[0].toUpperCase()}</div>
+        <div class="comment-body">
+          <div class="comment-meta">
+            <span class="comment-user">${c.user}</span>
+            <span class="comment-time">${c.time}</span>
+          </div>
+          <div class="comment-text">${c.text}</div>
+          <div class="comment-actions">
+            <span>▲ ${c.upvotes}</span>
+            <span>Reply</span>
+            <span>Share</span>
+          </div>
+        </div>
+      </div>
+    `;
+  });
+
+  comments.innerHTML = commentsHtml;
+  overlay.classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeDetail() {
+  document.getElementById('postDetail').classList.remove('active');
+  document.body.style.overflow = '';
+}
+
+function goHome() {
+  closeDetail();
+  filterPosts('all', document.querySelector('.nav-pill'));
+}
+
+function filterPosts(category, btn) {
+  document.querySelectorAll('.nav-pill').forEach(p => p.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  renderFeed(category);
+}
+
+function vote(id, direction) {
+  const post = posts.find(p => p.id === id);
+  if (post) {
+    post.votes += direction;
+    renderFeed(document.querySelector('.nav-pill.active')?.textContent.toLowerCase() || 'all');
+  }
+}
+
+// Close detail on Escape
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeDetail();
+});
+
+// Close detail on clicking overlay background
+document.getElementById('postDetail').addEventListener('click', (e) => {
+  if (e.target === document.getElementById('postDetail')) closeDetail();
+});
+
+// Initial render
+renderFeed();
+</script>
+</body>
+</html>
